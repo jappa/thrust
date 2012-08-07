@@ -18,6 +18,7 @@
 
 #include <thrust/detail/config.h>
 #include <thrust/detail/type_traits.h>
+#include <thrust/detail/minmax.h>
 #include <thrust/system/cuda/detail/cuda_launch_config.h>
 
 namespace thrust
@@ -59,6 +60,28 @@ struct blocked_thread_array : public launch_bounds<>
   __device__ __thrust_forceinline__ unsigned int block_dimension(void) const { return blockDim.x;  } 
   __device__ __thrust_forceinline__ unsigned int block_index(void)     const { return blockIdx.x;  }
   __device__ __thrust_forceinline__ unsigned int grid_dimension(void)  const { return gridDim.x;   }
+  __device__ __thrust_forceinline__ unsigned int linear_index(void)    const { return block_dimension() * block_index() + thread_index(); }
+  __device__ __thrust_forceinline__ void         barrier(void)               { __syncthreads();    }
+#else
+  __device__ __thrust_forceinline__ unsigned int thread_index(void)    const { return 0; }
+  __device__ __thrust_forceinline__ unsigned int block_dimension(void) const { return 0; }
+  __device__ __thrust_forceinline__ unsigned int block_index(void)     const { return 0; }
+  __device__ __thrust_forceinline__ unsigned int grid_dimension(void)  const { return 0; }
+  __device__ __thrust_forceinline__ unsigned int linear_index(void)    const { return 0; }
+  __device__ __thrust_forceinline__ void         barrier(void)               {           }
+#endif // THRUST_DEVICE_COMPILER_NVCC
+};
+
+struct blocked_thread_array_3d : public launch_bounds<>
+{
+// CUDA built-in variables require nvcc
+#if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
+  __device__ __thrust_forceinline__ unsigned int thread_index(void)    const { return threadIdx.z * blockDim.y * blockDim.x
+  + threadIdx.y * blockDim.x + threadIdx.x; }
+  __device__ __thrust_forceinline__ unsigned int block_dimension(void) const { return blockDim.x*blockDim.y*blockDim.z;  }
+  __device__ __thrust_forceinline__ unsigned int block_index(void)     const { return blockIdx.z * gridDim.y * gridDim.x + blockIdx.y * gridDim.x
+  + blockIdx.x;  }
+  __device__ __thrust_forceinline__ unsigned int grid_dimension(void)  const { return gridDim.x*gridDim.y*gridDim.z;   }
   __device__ __thrust_forceinline__ unsigned int linear_index(void)    const { return block_dimension() * block_index() + thread_index(); }
   __device__ __thrust_forceinline__ void         barrier(void)               { __syncthreads();    }
 #else

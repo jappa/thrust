@@ -85,6 +85,15 @@ template<typename Closure,
     synchronize_if_enabled("launch_closure_by_value");
 #endif // THRUST_DEVICE_COMPILER_NVCC
   }
+  
+  static void launch(Closure f, dim3 grid_dim, dim3 block_dim, cudaStream_t stream_id = 0)
+  {
+#if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
+    launch_closure_by_value<<<grid_dim,block_dim,0,stream_id>>>(f);
+    synchronize_if_enabled("launch_closure_by_value");
+#endif // THRUST_DEVICE_COMPILER_NVCC
+  }
+ 
 }; // end closure_launcher_base
 
 
@@ -113,6 +122,21 @@ template<typename Closure>
     synchronize_if_enabled("launch_closure_by_pointer");
 #endif // THRUST_DEVICE_COMPILER_NVCC
   }
+  static void launch(Closure f, dim3 grid_dim, dim3 block_dim, cudaStream_t stream_id = 0)
+  {
+  #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
+    // use temporary storage for the closure
+    // XXX use of cuda::tag is too specific here
+    thrust::cuda::tag cuda_tag;
+    thrust::host_system_tag host_tag;
+    thrust::detail::temporary_array<Closure,thrust::cuda::tag> closure_storage(cuda_tag, host_tag, &f, &f + 1);
+
+    // launch
+    detail::launch_closure_by_pointer<<<grid_dim, block_dim, 0, stream_id>>>((&closure_storage[0]).get());
+    synchronize_if_enabled("launch_closure_by_pointer");
+#endif // THRUST_DEVICE_COMPILER_NVCC
+  }  
+  
 };
 
 
@@ -137,6 +161,11 @@ template<typename Closure>
   {
     super_t::launch(f,num_blocks,block_size,smem_size);
   }
+
+  static void launch(Closure f, dim3 grid_dim, dim3 block_dim, cudaStream_t stream_id = 0)
+  {
+    super_t::launch(f,grid_dim, block_dim, stream_id);
+  }
 };
 
 template<typename Closure, typename Size>
@@ -157,6 +186,7 @@ template<typename Closure, typename Size1, typename Size2, typename Size3>
 {
   closure_launcher<Closure>::launch(f, num_blocks, block_size, smem_size);
 } // end launch_closure()
+
 
   
 template <typename Closure>
