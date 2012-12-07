@@ -31,12 +31,12 @@ namespace thrust
 
 template<typename System, typename InputIterator, typename EqualityComparable>
   typename thrust::iterator_traits<InputIterator>::difference_type
-    count(thrust::detail::dispatchable_base<System> &system, InputIterator first, InputIterator last, const EqualityComparable& value);
+    count(const thrust::detail::dispatchable_base<System> &system, InputIterator first, InputIterator last, const EqualityComparable& value);
 
 
 template<typename System, typename InputIterator, typename Predicate>
   typename thrust::iterator_traits<InputIterator>::difference_type
-    count_if(thrust::detail::dispatchable_base<System> &system, InputIterator first, InputIterator last, Predicate pred);
+    count_if(const thrust::detail::dispatchable_base<System> &system, InputIterator first, InputIterator last, Predicate pred);
 
 
 /*! \addtogroup algorithms
@@ -137,7 +137,7 @@ template <typename InputIterator, typename Predicate>
  *  \} // end reductions
  */
 
-}; // end thrust
+} // end thrust
 
 #include <thrust/detail/count.inl>
 

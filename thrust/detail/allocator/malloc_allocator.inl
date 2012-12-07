@@ -25,30 +25,6 @@ namespace thrust
 {
 namespace detail
 {
-namespace malloc_allocator_detail
-{
-
-
-template<typename T, typename System, typename Size>
-T *strip_const_malloc(const System &system, Size n)
-{
-  System &non_const_system = const_cast<System&>(system);
-
-  return static_cast<T*>(thrust::raw_pointer_cast(thrust::malloc(non_const_system, n)));
-} // end strip_const_malloc()
-
-
-// XXX eliminate this should we ever add thrust::free sans system argument
-template<typename System, typename Pointer>
-void strip_const_free(const System &system, Pointer ptr)
-{
-  System &non_const_system = const_cast<System&>(system);
-
-  thrust::free(non_const_system, ptr);
-} // end strip_const_free()
-
-
-} // end malloc_allocator_detail
 
 
 template<typename T, typename System, typename Pointer>
@@ -60,14 +36,15 @@ template<typename T, typename System, typename Pointer>
 
   // XXX should use a hypothetical thrust::static_pointer_cast here
   System system;
-  T *result = malloc_allocator_detail::strip_const_malloc<T>(select_system(system), sizeof(typename super_t::value_type) * cnt);
 
-  if(result == 0)
+  pointer result = thrust::malloc<T>(select_system(system), cnt);
+
+  if(result.get() == 0)
   {
-    throw thrust::system::detail::bad_alloc("tagged_allocator::allocate: malloc failed");
+    throw thrust::system::detail::bad_alloc("malloc_allocator::allocate: malloc failed");
   } // end if
 
-  return pointer(result);
+  return result;
 } // end malloc_allocator::allocate()
 
 
@@ -78,7 +55,7 @@ template<typename T, typename System, typename Pointer>
   using thrust::system::detail::generic::select_system;
 
   System system;
-  malloc_allocator_detail::strip_const_free(select_system(system), p);
+  thrust::free(select_system(system), p);
 } // end malloc_allocator
 
 

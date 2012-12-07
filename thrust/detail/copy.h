@@ -25,7 +25,7 @@ namespace thrust
 template<typename System,
          typename InputIterator,
          typename OutputIterator>
-  OutputIterator copy(thrust::detail::dispatchable_base<System> &system,
+  OutputIterator copy(const thrust::detail::dispatchable_base<System> &system,
                       InputIterator first,
                       InputIterator last,
                       OutputIterator result);
@@ -34,7 +34,7 @@ template<typename System,
          typename InputIterator,
          typename Size,
          typename OutputIterator>
-  OutputIterator copy_n(thrust::detail::dispatchable_base<System> &system,
+  OutputIterator copy_n(const thrust::detail::dispatchable_base<System> &system,
                         InputIterator first,
                         Size n,
                         OutputIterator result);
@@ -52,6 +52,35 @@ template<typename InputIterator,
                         Size n,
                         OutputIterator result);
 
+
+namespace detail
+{
+
+
+template<typename FromSystem,
+         typename ToSystem,
+         typename InputIterator,
+         typename OutputIterator>
+  OutputIterator two_system_copy(thrust::dispatchable<FromSystem> &from_system,
+                                 thrust::dispatchable<ToSystem>   &two_system,
+                                 InputIterator first,
+                                 InputIterator last,
+                                 OutputIterator result);
+
+
+template<typename FromSystem,
+         typename ToSystem,
+         typename InputIterator,
+         typename Size,
+         typename OutputIterator>
+  OutputIterator two_system_copy_n(thrust::dispatchable<FromSystem> &from_system,
+                                   thrust::dispatchable<ToSystem>   &two_system,
+                                   InputIterator first,
+                                   Size n,
+                                   OutputIterator result);
+
+
+} // end detail
 } // end thrust
 
 #include <thrust/detail/copy.inl>

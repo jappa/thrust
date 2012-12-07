@@ -197,7 +197,7 @@ template <class AdaptableUnaryFunction, class Iterator, class Reference = use_de
     detail::transform_iterator_base<AdaptableUnaryFunction, Iterator, Reference, Value>::type
     super_t;
 
-    friend class experimental::iterator_core_access;
+    friend class thrust::iterator_core_access;
   /*! \endcond
    */
 
@@ -296,6 +296,7 @@ template <class AdaptableUnaryFunction, class Iterator, class Reference = use_de
       return *this;
     }
 
+    __thrust_hd_warning_disable__
     __host__ __device__
     typename super_t::reference dereference() const
     { 
