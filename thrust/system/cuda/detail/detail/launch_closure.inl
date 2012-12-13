@@ -67,7 +67,7 @@ void launch_closure_by_pointer(const Closure *) {}
 #endif // THRUST_DEVICE_COMPILER_NVCC
 
 template<typename Closure,
-         bool launch_by_value = sizeof(Closure) <= 256>
+         bool launch_by_value = sizeof(Closure) <= 4*1024>
   struct closure_launcher_base
 {
   typedef void (*launch_function_t)(Closure); 
