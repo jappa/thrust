@@ -316,7 +316,7 @@ std::size_t block_size_with_maximum_potential_occupancy(const function_attribute
   {
     size_t occupancy = blocksize * cuda_launch_config_detail::max_active_blocks_per_multiprocessor(properties, attributes, blocksize, block_size_to_dynamic_smem_size(blocksize));
 
-    if(occupancy > highest_occupancy)
+    if(occupancy => highest_occupancy)
     {
       max_blocksize = blocksize;
       highest_occupancy = occupancy;
