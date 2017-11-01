@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ template<typename T> struct avoid_initialization : thrust::detail::has_trivial_c
 
 
 template<typename T, typename TemporaryArray, typename Size>
+__host__ __device__
 typename thrust::detail::enable_if<
   avoid_initialization<T>::value
 >::type
@@ -44,6 +45,7 @@ typename thrust::detail::enable_if<
 
 
 template<typename T, typename TemporaryArray, typename Size>
+__host__ __device__
 typename thrust::detail::disable_if<
   avoid_initialization<T>::value
 >::type
@@ -58,8 +60,18 @@ typename thrust::detail::disable_if<
 
 
 template<typename T, typename System>
+__host__ __device__
   temporary_array<T,System>
-    ::temporary_array(thrust::dispatchable<System> &system, size_type n)
+    ::temporary_array(thrust::execution_policy<System> &system)
+      :super_t(alloc_type(temporary_allocator<T,System>(system)))
+{
+} // end temporary_array::temporary_array()
+
+
+template<typename T, typename System>
+__host__ __device__
+  temporary_array<T,System>
+    ::temporary_array(thrust::execution_policy<System> &system, size_type n)
       :super_t(n, alloc_type(temporary_allocator<T,System>(system)))
 {
   temporary_array_detail::construct_values<T>(*this, n);
@@ -67,8 +79,9 @@ template<typename T, typename System>
 
 
 template<typename T, typename System>
+__host__ __device__
   temporary_array<T,System>
-    ::temporary_array(int, thrust::dispatchable<System> &system, size_type n)
+    ::temporary_array(int, thrust::execution_policy<System> &system, size_type n)
       :super_t(n, alloc_type(temporary_allocator<T,System>(system)))
 {
   // avoid initialization
@@ -78,8 +91,9 @@ template<typename T, typename System>
 
 template<typename T, typename System>
   template<typename InputIterator>
+  __host__ __device__
     temporary_array<T,System>
-      ::temporary_array(thrust::dispatchable<System> &system,
+      ::temporary_array(thrust::execution_policy<System> &system,
                         InputIterator first,
                         size_type n)
         : super_t(alloc_type(temporary_allocator<T,System>(system)))
@@ -92,9 +106,10 @@ template<typename T, typename System>
 
 template<typename T, typename System>
   template<typename InputIterator, typename InputSystem>
+  __host__ __device__
     temporary_array<T,System>
-      ::temporary_array(thrust::dispatchable<System> &system,
-                        thrust::dispatchable<InputSystem> &input_system,
+      ::temporary_array(thrust::execution_policy<System> &system,
+                        thrust::execution_policy<InputSystem> &input_system,
                         InputIterator first,
                         size_type n)
         : super_t(alloc_type(temporary_allocator<T,System>(system)))
@@ -107,8 +122,9 @@ template<typename T, typename System>
 
 template<typename T, typename System>
   template<typename InputIterator>
+  __host__ __device__
     temporary_array<T,System>
-      ::temporary_array(thrust::dispatchable<System> &system,
+      ::temporary_array(thrust::execution_policy<System> &system,
                         InputIterator first,
                         InputIterator last)
         : super_t(alloc_type(temporary_allocator<T,System>(system)))
@@ -121,9 +137,10 @@ template<typename T, typename System>
 
 template<typename T, typename System>
   template<typename InputSystem, typename InputIterator>
+  __host__ __device__
     temporary_array<T,System>
-      ::temporary_array(thrust::dispatchable<System> &system,
-                        thrust::dispatchable<InputSystem> &input_system,
+      ::temporary_array(thrust::execution_policy<System> &system,
+                        thrust::execution_policy<InputSystem> &input_system,
                         InputIterator first,
                         InputIterator last)
         : super_t(alloc_type(temporary_allocator<T,System>(system)))
@@ -135,6 +152,7 @@ template<typename T, typename System>
 
 
 template<typename T, typename System>
+__host__ __device__
   temporary_array<T,System>
     ::~temporary_array()
 {

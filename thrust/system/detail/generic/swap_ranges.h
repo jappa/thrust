@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,10 +29,11 @@ namespace detail
 namespace generic
 {
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator1,
          typename ForwardIterator2>
-  ForwardIterator2 swap_ranges(thrust::dispatchable<System> &system,
+__host__ __device__
+  ForwardIterator2 swap_ranges(thrust::execution_policy<DerivedPolicy> &exec,
                                ForwardIterator1 first1,
                                ForwardIterator1 last1,
                                ForwardIterator2 first2);

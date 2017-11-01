@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@
 #include <thrust/detail/copy_if.h>
 #include <thrust/distance.h>
 #include <thrust/functional.h>
+#include <thrust/detail/range/head_flags.h>
 
 namespace thrust
 {
@@ -42,68 +43,66 @@ namespace generic
 {
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator>
-  ForwardIterator unique(thrust::dispatchable<System> &system,
+__host__ __device__
+  ForwardIterator unique(thrust::execution_policy<DerivedPolicy> &exec,
                          ForwardIterator first,
                          ForwardIterator last)
 {
   typedef typename thrust::iterator_traits<ForwardIterator>::value_type InputType;
 
-  return thrust::unique(system, first, last, thrust::equal_to<InputType>());
+  return thrust::unique(exec, first, last, thrust::equal_to<InputType>());
 } // end unique()
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator,
          typename BinaryPredicate>
-  ForwardIterator unique(thrust::dispatchable<System> &system,
+__host__ __device__
+  ForwardIterator unique(thrust::execution_policy<DerivedPolicy> &exec,
                          ForwardIterator first,
                          ForwardIterator last,
                          BinaryPredicate binary_pred)
 {
   typedef typename thrust::iterator_traits<ForwardIterator>::value_type InputType;
   
-  thrust::detail::temporary_array<InputType,System> input(system, first, last);
+  thrust::detail::temporary_array<InputType,DerivedPolicy> input(exec, first, last);
   
-  return thrust::unique_copy(system, input.begin(), input.end(), first, binary_pred);
+  return thrust::unique_copy(exec, input.begin(), input.end(), first, binary_pred);
 } // end unique()
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator>
-  OutputIterator unique_copy(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator unique_copy(thrust::execution_policy<DerivedPolicy> &exec,
                              InputIterator first,
                              InputIterator last,
                              OutputIterator output)
 {
   typedef typename thrust::iterator_value<InputIterator>::type value_type;
-  return thrust::unique_copy(system, first,last,output,thrust::equal_to<value_type>());
+  return thrust::unique_copy(exec, first,last,output,thrust::equal_to<value_type>());
 } // end unique_copy()
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename BinaryPredicate>
-  OutputIterator unique_copy(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator unique_copy(thrust::execution_policy<DerivedPolicy> &exec,
                              InputIterator first,
                              InputIterator last,
                              OutputIterator output,
                              BinaryPredicate binary_pred)
 {
-  // empty sequence
-  if(first == last)
-    return output;
+  thrust::detail::head_flags<InputIterator, BinaryPredicate> stencil(first, last, binary_pred);
   
-  thrust::detail::temporary_array<int,System> stencil(system, thrust::distance(first, last));
+  using namespace thrust::placeholders;
   
-  // mark first element in each group
-  stencil[0] = 1; 
-  thrust::transform(system, first, last - 1, first + 1, stencil.begin() + 1, thrust::detail::not2(binary_pred)); 
-  
-  return thrust::copy_if(system, first, last, stencil.begin(), output, thrust::identity<int>());
+  return thrust::copy_if(exec, first, last, stencil.begin(), output, _1);
 } // end unique_copy()
 
 

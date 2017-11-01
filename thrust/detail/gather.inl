@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,54 +29,60 @@ namespace thrust
 {
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator,
          typename RandomAccessIterator,
          typename OutputIterator>
-  OutputIterator gather(const thrust::detail::dispatchable_base<System> &system,
-                        InputIterator                                    map_first,
-                        InputIterator                                    map_last,
-                        RandomAccessIterator                             input_first,
-                        OutputIterator                                   result)
+__host__ __device__
+  OutputIterator gather(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                        InputIterator                                               map_first,
+                        InputIterator                                               map_last,
+                        RandomAccessIterator                                        input_first,
+                        OutputIterator                                              result)
 {
   using thrust::system::detail::generic::gather;
-  return gather(thrust::detail::derived_cast(thrust::detail::strip_const(system)), map_first, map_last, input_first, result);
+  return gather(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), map_first, map_last, input_first, result);
 } // end gather()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename RandomAccessIterator,
          typename OutputIterator>
-  OutputIterator gather_if(const thrust::detail::dispatchable_base<System> &system,
-                           InputIterator1                                   map_first,
-                           InputIterator1                                   map_last,
-                           InputIterator2                                   stencil,
-                           RandomAccessIterator                             input_first,
-                           OutputIterator                                   result)
+__host__ __device__
+  OutputIterator gather_if(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                           InputIterator1                                              map_first,
+                           InputIterator1                                              map_last,
+                           InputIterator2                                              stencil,
+                           RandomAccessIterator                                        input_first,
+                           OutputIterator                                              result)
 {
   using thrust::system::detail::generic::gather_if;
-  return gather_if(thrust::detail::derived_cast(thrust::detail::strip_const(system)), map_first, map_last, stencil, input_first, result);
+  return gather_if(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), map_first, map_last, stencil, input_first, result);
 } // end gather_if()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename RandomAccessIterator,
          typename OutputIterator,
          typename Predicate>
-  OutputIterator gather_if(const thrust::detail::dispatchable_base<System> &system,
-                           InputIterator1                                   map_first,
-                           InputIterator1                                   map_last,
-                           InputIterator2                                   stencil,
-                           RandomAccessIterator                             input_first,
-                           OutputIterator                                   result,
-                           Predicate                                        pred)
+__host__ __device__
+  OutputIterator gather_if(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                           InputIterator1                                              map_first,
+                           InputIterator1                                              map_last,
+                           InputIterator2                                              stencil,
+                           RandomAccessIterator                                        input_first,
+                           OutputIterator                                              result,
+                           Predicate                                                   pred)
 {
   using thrust::system::detail::generic::gather_if;
-  return gather_if(thrust::detail::derived_cast(thrust::detail::strip_const(system)), map_first, map_last, stencil, input_first, result, pred);
+  return gather_if(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), map_first, map_last, stencil, input_first, result, pred);
 } // end gather_if()
 
 

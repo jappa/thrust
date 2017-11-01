@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cuda/detail/tag.h>
+#include <thrust/system/cuda/detail/execution_policy.h>
 
 namespace thrust
 {
@@ -28,17 +28,20 @@ namespace cuda
 namespace detail
 {
 
-template<typename System,
+
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename Predicate>
-   OutputIterator copy_if(dispatchable<System> &system,
-                          InputIterator1 first,
-                          InputIterator1 last,
-                          InputIterator2 stencil,
-                          OutputIterator result,
-                          Predicate pred);
+__host__ __device__
+OutputIterator copy_if(execution_policy<DerivedPolicy> &exec,
+                       InputIterator1 first,
+                       InputIterator1 last,
+                       InputIterator2 stencil,
+                       OutputIterator result,
+                       Predicate pred);
+
 
 } // end namespace detail
 } // end namespace cuda

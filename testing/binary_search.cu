@@ -1,5 +1,6 @@
 #include <unittest/unittest.h>
 #include <thrust/binary_search.h>
+#include <thrust/iterator/retag.h>
 
 #include <thrust/sequence.h>
 #include <thrust/sort.h>
@@ -13,8 +14,6 @@ __THRUST_DISABLE_MSVC_POSSIBLE_LOSS_OF_DATA_WARNING_BEGIN
 template <class Vector>
 void TestScalarLowerBoundSimple(void)
 {
-    typedef typename Vector::value_type T;
-
     Vector vec(5);
 
     vec[0] = 0;
@@ -83,8 +82,6 @@ DECLARE_UNITTEST(TestScalarLowerBoundDispatchImplicit);
 template <class Vector>
 void TestScalarUpperBoundSimple(void)
 {
-    typedef typename Vector::value_type T;
-
     Vector vec(5);
 
     vec[0] = 0;
@@ -152,8 +149,6 @@ DECLARE_UNITTEST(TestScalarUpperBoundDispatchImplicit);
 template <class Vector>
 void TestScalarBinarySearchSimple(void)
 {
-    typedef typename Vector::value_type T;
-
     Vector vec(5);
 
     vec[0] = 0;
@@ -221,8 +216,6 @@ DECLARE_UNITTEST(TestScalarBinarySearchDispatchImplicit);
 template <class Vector>
 void TestScalarEqualRangeSimple(void)
 {
-    typedef typename Vector::value_type T;
-
     Vector vec(5);
 
     vec[0] = 0;

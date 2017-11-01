@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in ccudaliance with the License.
@@ -21,7 +21,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cuda/detail/tag.h>
+#include <thrust/system/cuda/execution_policy.h>
 #include <thrust/memory.h>
 #include <thrust/detail/type_traits.h>
 #include <thrust/detail/allocator/malloc_allocator.h>
@@ -44,11 +44,11 @@ template<typename> class pointer;
 /*! \cond
  */
 
-// specialize std::iterator_traits to avoid problems with the name of
+// specialize thrust::iterator_traits to avoid problems with the name of
 // pointer's constructor shadowing its nested pointer type
 // do this before pointer is defined so the specialization is correctly
 // used inside the definition
-namespace std
+namespace thrust
 {
 
 template<typename Element>
@@ -65,7 +65,7 @@ template<typename Element>
     typedef typename ptr::reference               reference;
 }; // end iterator_traits
 
-} // end std
+} // end thrust
 
 /*! \endcond
  */
@@ -85,7 +85,7 @@ namespace system
  *  \brief \p thrust::system::cuda is the namespace containing functionality for allocating, manipulating,
  *         and deallocating memory available to Thrust's CUDA backend system.
  *         The identifiers are provided in a separate namespace underneath <tt>thrust::system</tt>
- *         for import convenience but are also aliased in the top-level <tt>thrust::tbb</tt>
+ *         for import convenience but are also aliased in the top-level <tt>thrust::cuda</tt>
  *         namespace for easy access.
  *
  */
@@ -177,7 +177,7 @@ template<typename T>
     /*! This constructor allows construction of a <tt>pointer<const T></tt> from a <tt>T*</tt>.
      *
      *  \param ptr A raw pointer to copy from, presumed to point to a location in memory
-     *         accessible by the \p tbb system.
+     *         accessible by the \p cuda system.
      *  \tparam OtherT \p OtherT shall be convertible to \p T.
      */
     template<typename OtherT>
@@ -321,7 +321,8 @@ void swap(reference<T> x, reference<T> y);
  *  \see cuda::free
  *  \see std::malloc
  */
-inline pointer<void> malloc(std::size_t n);
+inline __host__ __device__
+pointer<void> malloc(std::size_t n);
 
 /*! Allocates a typed area of memory available to Thrust's <tt>cuda</tt> system.
  *  \param n Number of elements to allocate.
@@ -334,7 +335,8 @@ inline pointer<void> malloc(std::size_t n);
  *  \see std::malloc
  */
 template<typename T>
-inline pointer<T> malloc(std::size_t n);
+inline __host__ __device__
+pointer<T> malloc(std::size_t n);
 
 /*! Deallocates an area of memory previously allocated by <tt>cuda::malloc</tt>.
  *  \param ptr A <tt>cuda::pointer<void></tt> pointing to the beginning of an area
@@ -342,7 +344,8 @@ inline pointer<T> malloc(std::size_t n);
  *  \see cuda::malloc
  *  \see std::free
  */
-inline void free(pointer<void> ptr);
+inline __host__ __device__
+void free(pointer<void> ptr);
 
 // XXX upon c++11
 // template<typename T> using allocator = thrust::detail::malloc_allocator<T,tag,pointer<T> >;
@@ -418,7 +421,4 @@ using thrust::system::cuda::allocator;
 } // end thrust
 
 #include <thrust/system/cuda/detail/memory.inl>
-
-// make cuda::tag's ADL targets available
-#include <thrust/system/cuda/detail/adl_targets.h>
 

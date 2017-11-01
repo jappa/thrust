@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,12 +30,6 @@ namespace thrust
 {
 namespace detail
 {
-
-
-// XXX WAR circular dependency with this forward declaration
-template<typename Iterator, typename FromSystem, typename ToSystem> class move_to_system;
-
-
 namespace allocator_traits_detail
 {
 
@@ -45,6 +39,7 @@ template<typename Allocator, typename InputType, typename OutputType>
 {
   Allocator &a;
 
+  __host__ __device__
   copy_construct_with_allocator(Allocator &a)
     : a(a)
   {}
@@ -61,19 +56,44 @@ template<typename Allocator, typename InputType, typename OutputType>
 };
 
 
+// we need to use allocator_traits<Allocator>::construct() to
+// copy construct a T if either:
+// 1. Allocator has a 2-argument construct() member or
+// 2. T has a non-trivial copy constructor
+template<typename Allocator, typename T>
+  struct needs_copy_construct_via_allocator
+    : integral_constant<
+        bool,
+        (has_member_construct2<Allocator,T,T>::value || !has_trivial_copy_constructor<T>::value)
+      >
+{};
+
+
+// we know that std::allocator::construct's only effect is to call T's
+// copy constructor, so we needn't consider or use its construct() member for copy construction
+template<typename U, typename T>
+  struct needs_copy_construct_via_allocator<std::allocator<U>, T>
+    : integral_constant<
+        bool,
+        !has_trivial_copy_constructor<T>::value
+      >
+{};
+
+
 // XXX it's regrettable that this implementation is copied almost
 //     exactly from system::detail::generic::uninitialized_copy
 //     perhaps generic::uninitialized_copy could call this routine
 //     with a default allocator
 template<typename Allocator, typename FromSystem, typename ToSystem, typename InputIterator, typename Pointer>
+__host__ __device__
   typename enable_if_convertible<
     FromSystem,
     ToSystem,
     Pointer
   >::type
     uninitialized_copy_with_allocator(Allocator &a,
-                                      thrust::dispatchable<FromSystem> &from_system,
-                                      thrust::dispatchable<ToSystem> &to_system,
+                                      const thrust::execution_policy<FromSystem> &from_system,
+                                      const thrust::execution_policy<ToSystem> &to_system,
                                       InputIterator first,
                                       InputIterator last,
                                       Pointer result)
@@ -107,14 +127,15 @@ template<typename Allocator, typename FromSystem, typename ToSystem, typename In
 //     perhaps generic::uninitialized_copy_n could call this routine
 //     with a default allocator
 template<typename Allocator, typename FromSystem, typename ToSystem, typename InputIterator, typename Size, typename Pointer>
+__host__ __device__
   typename enable_if_convertible<
     FromSystem,
     ToSystem,
     Pointer
   >::type
     uninitialized_copy_with_allocator_n(Allocator &a,
-                                        thrust::dispatchable<FromSystem> &from_system,
-                                        thrust::dispatchable<ToSystem> &to_system,
+                                        const thrust::execution_policy<FromSystem> &from_system,
+                                        const thrust::execution_policy<ToSystem> &to_system,
                                         InputIterator first,
                                         Size n,
                                         Pointer result)
@@ -139,14 +160,15 @@ template<typename Allocator, typename FromSystem, typename ToSystem, typename In
 
 
 template<typename Allocator, typename FromSystem, typename ToSystem, typename InputIterator, typename Pointer>
+__host__ __device__
   typename disable_if_convertible<
     FromSystem,
     ToSystem,
     Pointer
   >::type
     uninitialized_copy_with_allocator(Allocator &,
-                                      thrust::dispatchable<FromSystem> &from_system,
-                                      thrust::dispatchable<ToSystem> &to_system,
+                                      const thrust::execution_policy<FromSystem> &from_system,
+                                      const thrust::execution_policy<ToSystem> &to_system,
                                       InputIterator first,
                                       InputIterator last,
                                       Pointer result)
@@ -158,14 +180,15 @@ template<typename Allocator, typename FromSystem, typename ToSystem, typename In
 
 
 template<typename Allocator, typename FromSystem, typename ToSystem, typename InputIterator, typename Size, typename Pointer>
+__host__ __device__
   typename disable_if_convertible<
     FromSystem,
     ToSystem,
     Pointer
   >::type
     uninitialized_copy_with_allocator_n(Allocator &,
-                                        thrust::dispatchable<FromSystem> &from_system,
-                                        thrust::dispatchable<ToSystem> &to_system,
+                                        const thrust::execution_policy<FromSystem> &from_system,
+                                        const thrust::execution_policy<ToSystem> &to_system,
                                         InputIterator first,
                                         Size n,
                                         Pointer result)
@@ -176,99 +199,81 @@ template<typename Allocator, typename FromSystem, typename ToSystem, typename In
 } // end uninitialized_copy_with_allocator_n()
 
 
-template<typename Allocator, typename T>
-  struct is_trivially_copy_constructible
-    : integral_constant<
-        bool,
-        !has_member_construct2<Allocator,T,T>::value && has_trivial_copy_constructor<T>::value
-      >
-{};
-
-// we know that std::allocator::construct's only effect is to
-// call T's constructor, so we needn't use it when constructing T
-template<typename U, typename T>
-  struct is_trivially_copy_constructible<std::allocator<U>, T>
-    : has_trivial_copy_constructor<T>
-{};
-
-
 template<typename FromSystem, typename Allocator, typename InputIterator, typename Pointer>
-  typename enable_if<
-    is_trivially_copy_constructible<
+__host__ __device__
+  typename disable_if<
+    needs_copy_construct_via_allocator<
       Allocator,
       typename pointer_element<Pointer>::type
     >::value,
     Pointer
   >::type
-    copy_construct_range(thrust::dispatchable<FromSystem> &from_system,
+    copy_construct_range(thrust::execution_policy<FromSystem> &from_system,
                          Allocator &a,
                          InputIterator first,
                          InputIterator last,
                          Pointer result)
 {
-  typename allocator_system<Allocator>::type &to_system = allocator_system<Allocator>::get(a);
-
   // just call two_system_copy
-  return thrust::detail::two_system_copy(from_system, to_system, first, last, result);
+  return thrust::detail::two_system_copy(from_system, allocator_system<Allocator>::get(a), first, last, result);
 }
 
 
 template<typename FromSystem, typename Allocator, typename InputIterator, typename Size, typename Pointer>
-  typename enable_if<
-    is_trivially_copy_constructible<
+__host__ __device__
+  typename disable_if<
+    needs_copy_construct_via_allocator<
       Allocator,
       typename pointer_element<Pointer>::type
     >::value,
     Pointer
   >::type
-    copy_construct_range_n(thrust::dispatchable<FromSystem> &from_system,
+    copy_construct_range_n(thrust::execution_policy<FromSystem> &from_system,
                            Allocator &a,
                            InputIterator first,
                            Size n,
                            Pointer result)
 {
-  typename allocator_system<Allocator>::type &to_system = allocator_system<Allocator>::get(a);
-
   // just call two_system_copy_n
-  return thrust::detail::two_system_copy_n(from_system, to_system, first, n, result);
+  return thrust::detail::two_system_copy_n(from_system, allocator_system<Allocator>::get(a), first, n, result);
 }
 
 
 template<typename FromSystem, typename Allocator, typename InputIterator, typename Pointer>
-  typename disable_if<
-    is_trivially_copy_constructible<
+__host__ __device__
+  typename enable_if<
+    needs_copy_construct_via_allocator<
       Allocator,
       typename pointer_element<Pointer>::type
     >::value,
     Pointer
   >::type
-    copy_construct_range(thrust::dispatchable<FromSystem> &from_system,
+    copy_construct_range(thrust::execution_policy<FromSystem> &from_system,
                          Allocator &a,
                          InputIterator first,
                          InputIterator last,
                          Pointer result)
 {
-  typename allocator_system<Allocator>::type &to_system = allocator_system<Allocator>::get(a);
-  return uninitialized_copy_with_allocator(a, from_system, to_system, first, last, result);
+  return uninitialized_copy_with_allocator(a, from_system, allocator_system<Allocator>::get(a), first, last, result);
 }
 
 
 template<typename FromSystem, typename Allocator, typename InputIterator, typename Size, typename Pointer>
-  typename disable_if<
-    is_trivially_copy_constructible<
+__host__ __device__
+  typename enable_if<
+    needs_copy_construct_via_allocator<
       Allocator,
       typename pointer_element<Pointer>::type
     >::value,
     Pointer
   >::type
-    copy_construct_range_n(thrust::dispatchable<FromSystem> &from_system,
+    copy_construct_range_n(thrust::execution_policy<FromSystem> &from_system,
                            Allocator &a,
                            InputIterator first,
                            Size n,
                            Pointer result)
 {
-  typename allocator_system<Allocator>::type &to_system = allocator_system<Allocator>::get(a);
-  return uninitialized_copy_with_allocator_n(a, from_system, to_system, first, n, result);
+  return uninitialized_copy_with_allocator_n(a, from_system, allocator_system<Allocator>::get(a), first, n, result);
 }
 
 
@@ -276,7 +281,8 @@ template<typename FromSystem, typename Allocator, typename InputIterator, typena
 
 
 template<typename System, typename Allocator, typename InputIterator, typename Pointer>
-  Pointer copy_construct_range(thrust::dispatchable<System> &from_system,
+__host__ __device__
+  Pointer copy_construct_range(thrust::execution_policy<System> &from_system,
                                Allocator &a,
                                InputIterator first,
                                InputIterator last,
@@ -287,7 +293,8 @@ template<typename System, typename Allocator, typename InputIterator, typename P
 
 
 template<typename System, typename Allocator, typename InputIterator, typename Size, typename Pointer>
-  Pointer copy_construct_range_n(thrust::dispatchable<System> &from_system,
+__host__ __device__
+  Pointer copy_construct_range_n(thrust::execution_policy<System> &from_system,
                                  Allocator &a,
                                  InputIterator first,
                                  Size n,

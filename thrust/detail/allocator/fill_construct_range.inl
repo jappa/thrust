@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ template<typename Allocator, typename Arg1>
   Allocator &a;
   Arg1 arg;
 
+  __host__ __device__
   construct2_via_allocator(Allocator &a, const Arg1 &arg)
     : a(a), arg(arg)
   {}
@@ -67,6 +68,7 @@ template<typename Allocator, typename Arg1>
 
 
 template<typename Allocator, typename Pointer, typename Size, typename T>
+__host__ __device__
   typename enable_if<
     has_effectful_member_construct2<
       Allocator,
@@ -81,6 +83,7 @@ template<typename Allocator, typename Pointer, typename Size, typename T>
 
 
 template<typename Allocator, typename Pointer, typename Size, typename T>
+__host__ __device__
   typename disable_if<
     has_effectful_member_construct2<
       Allocator,
@@ -98,6 +101,7 @@ template<typename Allocator, typename Pointer, typename Size, typename T>
 
 
 template<typename Alloc, typename Pointer, typename Size, typename T>
+__host__ __device__
   void fill_construct_range(Alloc &a, Pointer p, Size n, const T &value)
 {
   return allocator_traits_detail::fill_construct_range(a,p,n,value);

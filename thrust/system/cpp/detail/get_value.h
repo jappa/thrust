@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,30 +16,8 @@
 
 #pragma once
 
-#include <thrust/system/cpp/detail/tag.h>
-#include <thrust/detail/raw_pointer_cast.h>
+#include <thrust/detail/config.h>
 
-namespace thrust
-{
-namespace system
-{
-namespace cpp
-{
-namespace detail
-{
-
-
-template<typename System, typename Pointer>
-__host__ __device__
-  typename thrust::iterator_value<Pointer>::type
-    get_value(thrust::system::cpp::detail::dispatchable<System> &, Pointer ptr)
-{
-  return *thrust::raw_pointer_cast(ptr);
-} // end get_value()
-
-
-} // end detail
-} // end cpp
-} // end system
-} // end thrust
+// this system inherits get_value
+#include <thrust/system/detail/sequential/get_value.h>
 

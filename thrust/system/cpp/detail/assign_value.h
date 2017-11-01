@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,27 +16,8 @@
 
 #pragma once
 
-#include <thrust/system/cpp/detail/tag.h>
-#include <thrust/detail/raw_pointer_cast.h>
+#include <thrust/detail/config.h>
 
-namespace thrust
-{
-namespace system
-{
-namespace cpp
-{
-namespace detail
-{
-
-template<typename System, typename Pointer1, typename Pointer2>
-__host__ __device__
-  void assign_value(thrust::system::cpp::detail::dispatchable<System> &, Pointer1 dst, Pointer2 src)
-{
-  *thrust::raw_pointer_cast(dst) = *thrust::raw_pointer_cast(src);
-} // end assign_value()
-
-} // end detail
-} // end cpp
-} // end system
-} // end thrust
+// this system inherits assign_value
+#include <thrust/system/detail/sequential/assign_value.h>
 

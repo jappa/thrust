@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ RandomAccessIterator lower_bound_n(RandomAccessIterator first,
                                    BinaryPredicate comp)
 {
   // wrap comp
-  thrust::detail::host_device_function<
+  thrust::detail::wrapped_function<
     BinaryPredicate,
     bool
   > wrapped_comp(comp);
@@ -86,7 +86,7 @@ RandomAccessIterator upper_bound_n(RandomAccessIterator first,
                                    BinaryPredicate comp)
 {
   // wrap comp
-  thrust::detail::host_device_function<
+  thrust::detail::wrapped_function<
     BinaryPredicate,
     bool
   > wrapped_comp(comp);
@@ -137,7 +137,7 @@ bool binary_search(RandomAccessIterator first, RandomAccessIterator last, const 
   RandomAccessIterator iter = thrust::system::detail::generic::scalar::lower_bound(first, last, value, comp);
 
   // wrap comp
-  thrust::detail::host_device_function<
+  thrust::detail::wrapped_function<
     Compare,
     bool
   > wrapped_comp(comp);

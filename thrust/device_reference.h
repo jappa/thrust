@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -223,7 +223,7 @@ template<typename T>
      *  thrust::device_reference<int> ref = v[0];
      *
      *  // ref equals the object at v[0]
-     *  assert(ref1 == v[0]);
+     *  assert(ref == v[0]);
      *
      *  // the address of ref equals the address of v[0]
      *  assert(&ref == &v[0]);
@@ -959,6 +959,20 @@ template<typename T>
 template<typename T>
 __host__ __device__
 void swap(device_reference<T> &x, device_reference<T> &y);
+
+// declare these methods for the purpose of Doxygenating them
+// they actually are defined for a derived-from class
+#if 0
+/*! Writes to an output stream the value of a \p device_reference.
+ *
+ *  \param os The output stream.
+ *  \param y The \p device_reference to output.
+ *  \return os.
+ */
+template<typename T, typename charT, typename traits>
+std::basic_ostream<charT, traits> &
+operator<<(std::basic_ostream<charT, traits> &os, const device_reference<T> &y);
+#endif
 
 /*! \}
  */

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
 
 #include <thrust/iterator/iterator_traits.h>
 #include <thrust/detail/temporary_array.h>
-#include <thrust/system/tbb/detail/tag.h>
-#include <thrust/system/detail/internal/scalar/merge.h>
-#include <thrust/system/detail/internal/scalar/binary_search.h>
+#include <thrust/system/tbb/detail/execution_policy.h>
+#include <thrust/merge.h>
+#include <thrust/binary_search.h>
+#include <thrust/detail/seq.h>
 #include <tbb/parallel_for.h>
 
 namespace thrust
@@ -69,12 +70,12 @@ struct range
     if (n1 > n2)
     {
       mid1 += n1 / 2;
-      mid2 = thrust::system::detail::internal::scalar::lower_bound(first2, last2, raw_reference_cast(*mid1), comp);
+      mid2 = thrust::lower_bound(thrust::seq, first2, last2, raw_reference_cast(*mid1), comp);
     }
     else
     {
       mid2 += n2 / 2;
-      mid1 = thrust::system::detail::internal::scalar::upper_bound(first1, last1, raw_reference_cast(*mid2), comp);
+      mid1 = thrust::upper_bound(thrust::seq, first1, last1, raw_reference_cast(*mid2), comp);
     }
     
     // set first range to [first1, mid1), [first2, mid2), result
@@ -103,11 +104,11 @@ struct body
   template <typename Range>
   void operator()(Range& r) const
   {
-    thrust::system::detail::internal::scalar::merge
-      (r.first1, r.last1,
-       r.first2, r.last2,
-       r.result,
-       r.comp);
+    thrust::merge(thrust::seq,
+                  r.first1, r.last1,
+                  r.first2, r.last2,
+                  r.result,
+                  r.comp);
   }
 };
 
@@ -168,12 +169,12 @@ struct range
     if (n1 > n2)
     {
       mid1 += n1 / 2;
-      mid2 = thrust::system::detail::internal::scalar::lower_bound(keys_first2, keys_last2, raw_reference_cast(*mid1), comp);
+      mid2 = thrust::lower_bound(thrust::seq, keys_first2, keys_last2, raw_reference_cast(*mid1), comp);
     }
     else
     {
       mid2 += n2 / 2;
-      mid1 = thrust::system::detail::internal::scalar::upper_bound(keys_first1, keys_last1, raw_reference_cast(*mid2), comp);
+      mid1 = thrust::upper_bound(thrust::seq, keys_first1, keys_last1, raw_reference_cast(*mid2), comp);
     }
     
     // set first range to [keys_first1, mid1), [keys_first2, mid2), keys_result, values_result
@@ -205,26 +206,26 @@ struct body
   template <typename Range>
   void operator()(Range& r) const
   {
-    thrust::system::detail::internal::scalar::merge_by_key
-      (r.keys_first1, r.keys_last1,
-       r.keys_first2, r.keys_last2,
-       r.values_first1,
-       r.values_first2,
-       r.keys_result,
-       r.values_result,
-       r.comp);
+    thrust::merge_by_key(thrust::seq,
+                         r.keys_first1, r.keys_last1,
+                         r.keys_first2, r.keys_last2,
+                         r.values_first1,
+                         r.values_first2,
+                         r.keys_result,
+                         r.values_result,
+                         r.comp);
   }
 };
 
 } // end namespace merge_by_key_detail
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename StrictWeakOrdering>
-OutputIterator merge(dispatchable<System> &system,
+OutputIterator merge(execution_policy<DerivedPolicy> &exec,
                      InputIterator1 first1,
                      InputIterator1 last1,
                      InputIterator2 first2,
@@ -244,7 +245,7 @@ OutputIterator merge(dispatchable<System> &system,
   return result;
 } // end merge()
 
-template <typename System,
+template <typename DerivedPolicy,
           typename InputIterator1,
           typename InputIterator2,
           typename InputIterator3,
@@ -253,7 +254,7 @@ template <typename System,
           typename OutputIterator2,
           typename StrictWeakOrdering>
 thrust::pair<OutputIterator1,OutputIterator2>
-  merge_by_key(dispatchable<System> &system,
+  merge_by_key(execution_policy<DerivedPolicy> &exec,
                InputIterator1 keys_first1,
                InputIterator1 keys_last1,
                InputIterator2 keys_first2,

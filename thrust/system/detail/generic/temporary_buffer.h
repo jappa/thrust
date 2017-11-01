@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -31,13 +31,15 @@ namespace generic
 {
 
 
-template<typename T, typename System>
-  thrust::pair<thrust::pointer<T,System>, typename thrust::pointer<T,System>::difference_type>
-    get_temporary_buffer(thrust::dispatchable<System> &s, typename thrust::pointer<T,System>::difference_type n);
+template<typename T, typename DerivedPolicy>
+__host__ __device__
+  thrust::pair<thrust::pointer<T,DerivedPolicy>, typename thrust::pointer<T,DerivedPolicy>::difference_type>
+    get_temporary_buffer(thrust::execution_policy<DerivedPolicy> &exec, typename thrust::pointer<T,DerivedPolicy>::difference_type n);
 
 
-template<typename System, typename Pointer>
-  void return_temporary_buffer(thrust::dispatchable<System> &s, Pointer p);
+template<typename DerivedPolicy, typename Pointer>
+__host__ __device__
+  void return_temporary_buffer(thrust::execution_policy<DerivedPolicy> &exec, Pointer p);
 
 
 } // end generic

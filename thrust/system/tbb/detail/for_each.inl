@@ -1,8 +1,8 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in ctbbliance with the License.
+ *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -19,7 +19,7 @@
 #include <thrust/distance.h>
 #include <thrust/iterator/iterator_traits.h>
 #include <thrust/distance.h>
-#include <thrust/system/detail/internal/scalar/for_each.h>
+#include <thrust/system/detail/sequential/execution_policy.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
 
@@ -49,7 +49,7 @@ template<typename RandomAccessIterator,
   void operator()(const ::tbb::blocked_range<Size> &r) const
   {
     // we assume that blocked_range specifies a contiguous range of integers
-    thrust::system::detail::internal::scalar::for_each_n(m_first + r.begin(), r.size(), m_f);
+    thrust::for_each_n(thrust::system::detail::sequential::seq, m_first + r.begin(), r.size(), m_f);
   } // end operator()()
 }; // end body
 
@@ -65,11 +65,11 @@ template<typename Size, typename RandomAccessIterator, typename UnaryFunction>
 } // end for_each_detail
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename RandomAccessIterator,
          typename Size,
          typename UnaryFunction>
-RandomAccessIterator for_each_n(dispatchable<System> &,
+RandomAccessIterator for_each_n(execution_policy<DerivedPolicy> &,
                                 RandomAccessIterator first,
                                 Size n,
                                 UnaryFunction f)
@@ -81,10 +81,10 @@ RandomAccessIterator for_each_n(dispatchable<System> &,
 } // end for_each_n 
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename RandomAccessIterator,
          typename UnaryFunction>
-  RandomAccessIterator for_each(dispatchable<System> &s,
+  RandomAccessIterator for_each(execution_policy<DerivedPolicy> &s,
                                 RandomAccessIterator first,
                                 RandomAccessIterator last,
                                 UnaryFunction f)

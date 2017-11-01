@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ namespace detail
 
 
 template<typename T, typename Tag, typename Pointer>
+  __host__ __device__
   tagged_allocator<T,Tag,Pointer>
     ::tagged_allocator()
 {}
 
 
 template<typename T, typename Tag, typename Pointer>
+  __host__ __device__
   tagged_allocator<T,Tag,Pointer>
     ::tagged_allocator(const tagged_allocator<T,Tag,Pointer> &)
 {}
@@ -38,18 +40,21 @@ template<typename T, typename Tag, typename Pointer>
 
 template<typename T, typename Tag, typename Pointer>
   template<typename U, typename OtherPointer>
+    __host__ __device__
     tagged_allocator<T,Tag,Pointer>
       ::tagged_allocator(const tagged_allocator<U,Tag,OtherPointer> &)
 {}
 
 
 template<typename T, typename Tag, typename Pointer>
+  __host__ __device__
   tagged_allocator<T,Tag,Pointer>
     ::~tagged_allocator()
 {}
 
 
 template<typename T, typename Tag, typename Pointer>
+  __host__ __device__
   typename tagged_allocator<T,Tag,Pointer>::pointer
     tagged_allocator<T,Tag,Pointer>
       ::address(reference x) const
@@ -59,6 +64,7 @@ template<typename T, typename Tag, typename Pointer>
 
 
 template<typename T, typename Tag, typename Pointer>
+  __host__ __device__
   typename tagged_allocator<T,Tag,Pointer>::const_pointer
     tagged_allocator<T,Tag,Pointer>
       ::address(const_reference x) const

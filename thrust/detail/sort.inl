@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,147 +30,171 @@ namespace thrust
 {
 
 
-template<typename System, typename RandomAccessIterator>
-  void sort(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename RandomAccessIterator>
+__host__ __device__
+  void sort(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
             RandomAccessIterator first,
             RandomAccessIterator last)
 {
   using thrust::system::detail::generic::sort;
-  return sort(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+  return sort(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last);
 } // end sort()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename RandomAccessIterator,
          typename StrictWeakOrdering>
-  void sort(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  void sort(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
             RandomAccessIterator first,
             RandomAccessIterator last,
             StrictWeakOrdering comp)
 {
   using thrust::system::detail::generic::sort;
-  return sort(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, comp);
+  return sort(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, comp);
 } // end sort()
 
 
-template<typename System, typename RandomAccessIterator>
-  void stable_sort(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename RandomAccessIterator>
+__host__ __device__
+  void stable_sort(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                    RandomAccessIterator first,
                    RandomAccessIterator last)
 {
   using thrust::system::detail::generic::stable_sort;
-  return stable_sort(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+  return stable_sort(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last);
 } // end stable_sort()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename RandomAccessIterator,
          typename StrictWeakOrdering>
-  void stable_sort(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  void stable_sort(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                    RandomAccessIterator first,
                    RandomAccessIterator last,
                    StrictWeakOrdering comp)
 {
   using thrust::system::detail::generic::stable_sort;
-  return stable_sort(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, comp);
+  return stable_sort(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, comp);
 } // end stable_sort()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename RandomAccessIterator1,
          typename RandomAccessIterator2>
-  void sort_by_key(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  void sort_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                    RandomAccessIterator1 keys_first,
                    RandomAccessIterator1 keys_last,
                    RandomAccessIterator2 values_first)
 {
   using thrust::system::detail::generic::sort_by_key;
-  return sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), keys_first, keys_last, values_first);
+  return sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), keys_first, keys_last, values_first);
 } // end sort_by_key()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename RandomAccessIterator1,
          typename RandomAccessIterator2,
          typename StrictWeakOrdering>
-  void sort_by_key(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  void sort_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                    RandomAccessIterator1 keys_first,
                    RandomAccessIterator1 keys_last,
                    RandomAccessIterator2 values_first,
                    StrictWeakOrdering comp)
 {
   using thrust::system::detail::generic::sort_by_key;
-  return sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), keys_first, keys_last, values_first, comp);
+  return sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), keys_first, keys_last, values_first, comp);
 } // end sort_by_key()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename RandomAccessIterator1,
          typename RandomAccessIterator2>
-  void stable_sort_by_key(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  void stable_sort_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                           RandomAccessIterator1 keys_first,
                           RandomAccessIterator1 keys_last,
                           RandomAccessIterator2 values_first)
 {
   using thrust::system::detail::generic::stable_sort_by_key;
-  return stable_sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), keys_first, keys_last, values_first);
+  return stable_sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), keys_first, keys_last, values_first);
 } // end stable_sort_by_key()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename RandomAccessIterator1,
          typename RandomAccessIterator2,
          typename StrictWeakOrdering>
-  void stable_sort_by_key(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  void stable_sort_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                           RandomAccessIterator1 keys_first,
                           RandomAccessIterator1 keys_last,
                           RandomAccessIterator2 values_first,
                           StrictWeakOrdering comp)
 {
   using thrust::system::detail::generic::stable_sort_by_key;
-  return stable_sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), keys_first, keys_last, values_first, comp);
+  return stable_sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), keys_first, keys_last, values_first, comp);
 } // end stable_sort_by_key()
 
 
-template<typename System, typename ForwardIterator>
-  bool is_sorted(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename ForwardIterator>
+__host__ __device__
+  bool is_sorted(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                  ForwardIterator first,
                  ForwardIterator last)
 {
   using thrust::system::detail::generic::is_sorted;
-  return is_sorted(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+  return is_sorted(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last);
 } // end is_sorted()
 
 
-template<typename System, typename ForwardIterator, typename Compare>
-  bool is_sorted(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename ForwardIterator, typename Compare>
+__host__ __device__
+  bool is_sorted(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                  ForwardIterator first,
                  ForwardIterator last,
                  Compare comp)
 {
   using thrust::system::detail::generic::is_sorted;
-  return is_sorted(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, comp);
+  return is_sorted(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, comp);
 } // end is_sorted()
 
 
-template<typename System, typename ForwardIterator>
-  ForwardIterator is_sorted_until(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename ForwardIterator>
+__host__ __device__
+  ForwardIterator is_sorted_until(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                   ForwardIterator first,
                                   ForwardIterator last)
 {
   using thrust::system::detail::generic::is_sorted_until;
-  return is_sorted_until(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+  return is_sorted_until(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last);
 } // end is_sorted_until()
 
 
-template<typename System, typename ForwardIterator, typename Compare>
-  ForwardIterator is_sorted_until(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename ForwardIterator, typename Compare>
+__host__ __device__
+  ForwardIterator is_sorted_until(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                   ForwardIterator first,
                                   ForwardIterator last,
                                   Compare comp)
 {
   using thrust::system::detail::generic::is_sorted_until;
-  return is_sorted_until(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, comp);
+  return is_sorted_until(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, comp);
 } // end is_sorted_until()
 
 
@@ -194,6 +218,7 @@ template<typename RandomAccessIterator>
 
 template<typename RandomAccessIterator,
          typename StrictWeakOrdering>
+  __host__ __device__
   void sort(RandomAccessIterator first,
             RandomAccessIterator last,
             StrictWeakOrdering comp)

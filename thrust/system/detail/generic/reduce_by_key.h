@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -31,27 +31,29 @@ namespace generic
 {
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator1,
          typename OutputIterator2>
+__host__ __device__
   thrust::pair<OutputIterator1,OutputIterator2>
-    reduce_by_key(thrust::dispatchable<System> &system,
+    reduce_by_key(thrust::execution_policy<DerivedPolicy> &exec,
                   InputIterator1 keys_first, 
                   InputIterator1 keys_last,
                   InputIterator2 values_first,
                   OutputIterator1 keys_output,
                   OutputIterator2 values_output);
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator1,
          typename OutputIterator2,
          typename BinaryPredicate>
+__host__ __device__
   thrust::pair<OutputIterator1,OutputIterator2>
-    reduce_by_key(thrust::dispatchable<System> &system,
+    reduce_by_key(thrust::execution_policy<DerivedPolicy> &exec,
                   InputIterator1 keys_first, 
                   InputIterator1 keys_last,
                   InputIterator2 values_first,
@@ -59,15 +61,16 @@ template<typename System,
                   OutputIterator2 values_output,
                   BinaryPredicate binary_pred);
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator1,
          typename OutputIterator2,
          typename BinaryPredicate,
          typename BinaryFunction>
+__host__ __device__
   thrust::pair<OutputIterator1,OutputIterator2>
-    reduce_by_key(thrust::dispatchable<System> &system,
+    reduce_by_key(thrust::execution_policy<DerivedPolicy> &exec,
                   InputIterator1 keys_first, 
                   InputIterator1 keys_last,
                   InputIterator2 values_first,

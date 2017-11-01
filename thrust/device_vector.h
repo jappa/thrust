@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@
 #include <thrust/device_malloc_allocator.h>
 #include <thrust/detail/vector_base.h>
 #include <vector>
+#include <utility>
 
 namespace thrust
 {
@@ -56,10 +57,12 @@ template<typename T, typename Alloc = thrust::device_malloc_allocator<T> >
     typedef detail::vector_base<T,Alloc> Parent;
 
   public:
-    /*! \cond */
+    /*! \cond
+     */
     typedef typename Parent::size_type  size_type;
     typedef typename Parent::value_type value_type;
-    /*! \endcond */
+    /*! \endcond
+     */
 
     /*! This constructor creates an empty \p device_vector.
      */
@@ -67,9 +70,16 @@ template<typename T, typename Alloc = thrust::device_malloc_allocator<T> >
     device_vector(void)
       :Parent() {}
 
+    /*! The destructor erases the elements.
+     */
+    //  Define an empty destructor to explicitly specify
+    //  its execution space qualifier, as a workaround for nvcc warning
+    __host__
+    ~device_vector(void) {}
+
     /*! This constructor creates a \p device_vector with the given
      *  size.
-     *  \param n The number of elements to initially craete.
+     *  \param n The number of elements to initially create.
      */
     __host__
     explicit device_vector(size_type n)
@@ -90,6 +100,31 @@ template<typename T, typename Alloc = thrust::device_malloc_allocator<T> >
     __host__
     device_vector(const device_vector &v)
       :Parent(v) {}
+
+  #if __cplusplus >= 201103L
+    /*! Move constructor moves from another \p device_vector.
+     *  \param v The device_vector to move.
+     */
+     __host__
+    device_vector(device_vector &&v)
+      :Parent(std::move(v)) {}
+  #endif
+
+  /*! Copy assign operator copies another \p device_vector with the same type.
+   *  \param v The \p device_vector to copy.
+   */
+  __host__
+  device_vector &operator=(const device_vector &v)
+  { Parent::operator=(v); return *this; }
+
+  #if __cplusplus >= 201103L
+    /*! Move assign operator moves from another \p device_vector.
+     *  \param v The device_vector to move.
+     */
+     __host__
+     device_vector &operator=(device_vector &&v)
+     { Parent::operator=(std::move(v)); return *this; }
+  #endif
 
     /*! Copy constructor copies from an exemplar \p device_vector with different type.
      *  \param v The \p device_vector to copy.
@@ -129,6 +164,14 @@ template<typename T, typename Alloc = thrust::device_malloc_allocator<T> >
     template<typename OtherT, typename OtherAlloc>
     __host__
     device_vector(const host_vector<OtherT,OtherAlloc> &v);
+
+    /*! Assign operator copies from an examplar \p host_vector.
+     *  \param v The \p host_vector to copy.
+     */
+    template<typename OtherT, typename OtherAlloc>
+    __host__
+    device_vector &operator=(const host_vector<OtherT,OtherAlloc> &v)
+    { Parent::operator=(v); return *this; }
 
     /*! This constructor builds a \p device_vector from a range.
      *  \param first The beginning of the range.

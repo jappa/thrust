@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ namespace detail
 //   result = OutputIterator2::value_type
 //
 // XXX upon c++0x, TemporaryType needs to be:
-// result_of<BinaryFunction>::type
+// result_of_adaptable_function<BinaryFunction>::type
 template<typename InputIterator, typename OutputIterator, typename Function>
   struct intermediate_type_from_function_and_iterators
     : eval_if<

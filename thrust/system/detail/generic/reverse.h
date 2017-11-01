@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,18 +29,23 @@ namespace detail
 namespace generic
 {
 
-template<typename System, typename BidirectionalIterator>
-  void reverse(thrust::dispatchable<System> &system,
+
+template<typename DerivedPolicy, typename BidirectionalIterator>
+__host__ __device__
+  void reverse(thrust::execution_policy<DerivedPolicy> &exec,
                BidirectionalIterator first,
                BidirectionalIterator last);
 
-template<typename System,
+
+template<typename DerivedPolicy,
          typename BidirectionalIterator,
          typename OutputIterator>
-  OutputIterator reverse_copy(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator reverse_copy(thrust::execution_policy<DerivedPolicy> &exec,
                               BidirectionalIterator first,
                               BidirectionalIterator last,
                               OutputIterator result);
+
 
 } // end namespace generic
 } // end namespace detail

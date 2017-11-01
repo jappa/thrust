@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,8 +33,11 @@ namespace cuda
 namespace detail
 {
 
-template <typename IndexType>
+
+template<typename IndexType>
+__host__ __device__
 thrust::system::detail::internal::uniform_decomposition<IndexType> default_decomposition(IndexType n);
+
 
 } // end namespace detail
 } // end namespace cuda

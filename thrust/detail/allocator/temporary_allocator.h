@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,10 +20,8 @@
 #include <thrust/detail/allocator/tagged_allocator.h>
 #include <thrust/detail/allocator/allocator_traits.h>
 #include <thrust/pair.h>
-//#include <thrust/detail/pointer.h>
-//#include <thrust/detail/reference.h>
 #include <thrust/memory.h>
-#include <thrust/detail/dispatchable.h>
+#include <thrust/detail/execution_policy.h>
 
 namespace thrust
 {
@@ -51,15 +49,25 @@ template<typename T, typename System>
     typedef typename super_t::pointer   pointer;
     typedef typename super_t::size_type size_type;
 
-    inline explicit temporary_allocator(thrust::dispatchable<System> &system) :
+    inline __host__ __device__
+    temporary_allocator(const temporary_allocator &other) :
+      super_t(),
+      m_system(other.m_system)
+    {}
+
+    inline __host__ __device__
+    explicit temporary_allocator(thrust::execution_policy<System> &system) :
       super_t(),
       m_system(thrust::detail::derived_cast(system))
     {}
 
+    __host__ __device__
     pointer allocate(size_type cnt);
 
+    __host__ __device__
     void deallocate(pointer p, size_type n);
 
+    __host__ __device__
     inline System &system()
     {
       return m_system;

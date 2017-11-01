@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 
-/*! \file constant_iterator.h
+/*! \file thrust/iterator/constant_iterator.h
  *  \brief An iterator which returns a constant value when
  *         dereferenced
  */

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,12 +29,14 @@ namespace thrust
 {
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator, 
          typename UnaryFunction, 
          typename OutputType,
          typename BinaryFunction>
-  OutputType transform_reduce(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputType transform_reduce(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                               InputIterator first,
                               InputIterator last,
                               UnaryFunction unary_op,
@@ -42,7 +44,7 @@ template<typename System,
                               BinaryFunction binary_op)
 {
   using thrust::system::detail::generic::transform_reduce;
-  return transform_reduce(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, unary_op, init, binary_op);
+  return transform_reduce(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, unary_op, init, binary_op);
 } // end transform_reduce()
 
 

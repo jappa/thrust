@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -28,11 +28,16 @@ namespace detail
 namespace generic
 {
 
-template<typename System, typename InputIterator1, typename InputIterator2>
-bool equal(thrust::dispatchable<System> &system, InputIterator1 first1, InputIterator1 last1, InputIterator2 first2);
 
-template<typename System, typename InputIterator1, typename InputIterator2, typename BinaryPredicate>
-bool equal(thrust::dispatchable<System> &system, InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, BinaryPredicate binary_pred);
+template<typename DerivedPolicy, typename InputIterator1, typename InputIterator2>
+__host__ __device__
+bool equal(thrust::execution_policy<DerivedPolicy> &exec, InputIterator1 first1, InputIterator1 last1, InputIterator2 first2);
+
+
+template<typename DerivedPolicy, typename InputIterator1, typename InputIterator2, typename BinaryPredicate>
+__host__ __device__
+bool equal(thrust::execution_policy<DerivedPolicy> &exec, InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, BinaryPredicate binary_pred);
+
 
 } // end namespace generic
 } // end namespace detail

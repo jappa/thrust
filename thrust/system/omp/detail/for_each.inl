@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -36,11 +36,11 @@ namespace omp
 namespace detail
 {
 
-template<typename System,
+template<typename DerivedPolicy,
          typename RandomAccessIterator,
          typename Size,
          typename UnaryFunction>
-RandomAccessIterator for_each_n(dispatchable<System> &,
+RandomAccessIterator for_each_n(execution_policy<DerivedPolicy> &,
                                 RandomAccessIterator first,
                                 Size n,
                                 UnaryFunction f)
@@ -56,8 +56,7 @@ RandomAccessIterator for_each_n(dispatchable<System> &,
   if (n <= 0) return first;  //empty range
 
   // create a wrapped function for f
-  typedef typename thrust::iterator_reference<RandomAccessIterator>::type reference;
-  thrust::detail::host_function<UnaryFunction,void> wrapped_f(f);
+  thrust::detail::wrapped_function<UnaryFunction,void> wrapped_f(f);
 
 // do not attempt to compile the body of this function, which depends on #pragma omp,
 // without support from the compiler
@@ -79,10 +78,10 @@ RandomAccessIterator for_each_n(dispatchable<System> &,
   return first + n;
 } // end for_each_n() 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename RandomAccessIterator,
          typename UnaryFunction>
-  RandomAccessIterator for_each(dispatchable<System> &s,
+  RandomAccessIterator for_each(execution_policy<DerivedPolicy> &s,
                                 RandomAccessIterator first,
                                 RandomAccessIterator last,
                                 UnaryFunction f)

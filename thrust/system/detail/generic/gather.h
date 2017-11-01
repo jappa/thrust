@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,43 +30,46 @@ namespace generic
 {
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator,
          typename RandomAccessIterator,
          typename OutputIterator>
-  OutputIterator gather(thrust::dispatchable<System> &system,
-                        InputIterator                 map_first,
-                        InputIterator                 map_last,
-                        RandomAccessIterator          input_first,
-                        OutputIterator                result);
+__host__ __device__
+  OutputIterator gather(thrust::execution_policy<DerivedPolicy> &exec,
+                        InputIterator                            map_first,
+                        InputIterator                            map_last,
+                        RandomAccessIterator                     input_first,
+                        OutputIterator                           result);
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename RandomAccessIterator,
          typename OutputIterator>
-  OutputIterator gather_if(thrust::dispatchable<System> &system,
-                           InputIterator1                map_first,
-                           InputIterator1                map_last,
-                           InputIterator2                stencil,
-                           RandomAccessIterator          input_first,
-                           OutputIterator                result);
+__host__ __device__
+  OutputIterator gather_if(thrust::execution_policy<DerivedPolicy> &exec,
+                           InputIterator1                           map_first,
+                           InputIterator1                           map_last,
+                           InputIterator2                           stencil,
+                           RandomAccessIterator                     input_first,
+                           OutputIterator                           result);
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename RandomAccessIterator,
          typename OutputIterator,
          typename Predicate>
-  OutputIterator gather_if(thrust::dispatchable<System> &system,
-                           InputIterator1                map_first,
-                           InputIterator1                map_last,
-                           InputIterator2                stencil,
-                           RandomAccessIterator          input_first,
-                           OutputIterator                result,
-                           Predicate                     pred);
+__host__ __device__
+  OutputIterator gather_if(thrust::execution_policy<DerivedPolicy> &exec,
+                           InputIterator1                           map_first,
+                           InputIterator1                           map_last,
+                           InputIterator2                           stencil,
+                           RandomAccessIterator                     input_first,
+                           OutputIterator                           result,
+                           Predicate                                pred);
 
 
 } // end namespace generic

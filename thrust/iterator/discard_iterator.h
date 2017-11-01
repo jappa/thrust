@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 
-/*! \file discard_iterator.h
+/*! \file thrust/iterator/discard_iterator.h
  *  \brief An iterator which "discards" (ignores) values assigned to it upon dereference
  */
 
@@ -78,7 +78,7 @@ namespace thrust
  *    // we are only interested in the reduced values
  *    // use discard_iterator to ignore the output keys
  *    thrust::reduce_by_key(keys.begin(), keys.end(),
- *                          values.begin(), values.end(),
+ *                          values.begin(),
  *                          thrust::make_discard_iterator(),
  *                          result.begin());
  *    

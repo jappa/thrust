@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -32,68 +32,78 @@ namespace thrust
 {
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator>
-  OutputIterator inclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator inclusive_scan(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                 InputIterator first,
                                 InputIterator last,
                                 OutputIterator result)
 {
   using thrust::system::detail::generic::inclusive_scan;
-  return inclusive_scan(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result);
+  return inclusive_scan(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, result);
 } // end inclusive_scan() 
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename AssociativeOperator>
-  OutputIterator inclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator inclusive_scan(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                 InputIterator first,
                                 InputIterator last,
                                 OutputIterator result,
                                 AssociativeOperator binary_op)
 {
   using thrust::system::detail::generic::inclusive_scan;
-  return inclusive_scan(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result, binary_op);
+  return inclusive_scan(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, result, binary_op);
 } // end inclusive_scan()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator>
-  OutputIterator exclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                 InputIterator first,
                                 InputIterator last,
                                 OutputIterator result)
 {
   using thrust::system::detail::generic::exclusive_scan;
-  return exclusive_scan(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result);
+  return exclusive_scan(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, result);
 } // end exclusive_scan()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename T>
-  OutputIterator exclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                 InputIterator first,
                                 InputIterator last,
                                 OutputIterator result,
                                 T init)
 {
   using thrust::system::detail::generic::exclusive_scan;
-  return exclusive_scan(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result, init);
+  return exclusive_scan(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, result, init);
 } // end exclusive_scan()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename T,
          typename AssociativeOperator>
-  OutputIterator exclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                 InputIterator first,
                                 InputIterator last,
                                 OutputIterator result,
@@ -101,31 +111,35 @@ template<typename System,
                                 AssociativeOperator binary_op)
 {
   using thrust::system::detail::generic::exclusive_scan;
-  return exclusive_scan(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result, init, binary_op);
+  return exclusive_scan(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, result, init, binary_op);
 } // end exclusive_scan()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator>
-  OutputIterator inclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator inclusive_scan_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
                                        OutputIterator result)
 {
   using thrust::system::detail::generic::inclusive_scan_by_key;
-  return inclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first1, last1, first2, result);
+  return inclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first1, last1, first2, result);
 } // end inclusive_scan_by_key()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename BinaryPredicate>
-  OutputIterator inclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator inclusive_scan_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
@@ -133,17 +147,19 @@ template<typename System,
                                        BinaryPredicate binary_pred)
 {
   using thrust::system::detail::generic::inclusive_scan_by_key;
-  return inclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first1, last1, first2, result, binary_pred);
+  return inclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first1, last1, first2, result, binary_pred);
 } // end inclusive_scan_by_key()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename BinaryPredicate,
          typename AssociativeOperator>
-  OutputIterator inclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator inclusive_scan_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
@@ -152,31 +168,35 @@ template<typename System,
                                        AssociativeOperator binary_op)
 {
   using thrust::system::detail::generic::inclusive_scan_by_key;
-  return inclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first1, last1, first2, result, binary_pred, binary_op);
+  return inclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first1, last1, first2, result, binary_pred, binary_op);
 } // end inclusive_scan_by_key()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator>
-  OutputIterator exclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
                                        OutputIterator result)
 {
   using thrust::system::detail::generic::exclusive_scan_by_key;
-  return exclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first1, last1, first2, result);
+  return exclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first1, last1, first2, result);
 } // end exclusive_scan_by_key()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename T>
-  OutputIterator exclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
@@ -184,17 +204,19 @@ template<typename System,
                                        T init)
 {
   using thrust::system::detail::generic::exclusive_scan_by_key;
-  return exclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first1, last1, first2, result, init);
+  return exclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first1, last1, first2, result, init);
 } // end exclusive_scan_by_key()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename T,
          typename BinaryPredicate>
-  OutputIterator exclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
@@ -203,18 +225,20 @@ template<typename System,
                                        BinaryPredicate binary_pred)
 {
   using thrust::system::detail::generic::exclusive_scan_by_key;
-  return exclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first1, last1, first2, result, init, binary_pred);
+  return exclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first1, last1, first2, result, init, binary_pred);
 } // end exclusive_scan_by_key()
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename T,
          typename BinaryPredicate,
          typename AssociativeOperator>
-  OutputIterator exclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
@@ -224,7 +248,7 @@ template<typename System,
                                        AssociativeOperator binary_op)
 {
   using thrust::system::detail::generic::exclusive_scan_by_key;
-  return exclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first1, last1, first2, result, init, binary_pred, binary_op);
+  return exclusive_scan_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first1, last1, first2, result, init, binary_pred, binary_op);
 } // end exclusive_scan_by_key()
 
 

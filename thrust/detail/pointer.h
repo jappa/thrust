@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@
 #include <thrust/detail/type_traits/pointer_traits.h>
 #include <thrust/detail/type_traits.h>
 #include <thrust/detail/reference_forward_declaration.h>
+#include <ostream>
+
 
 namespace thrust
 {
@@ -32,11 +34,11 @@ template<typename Element, typename Tag, typename Reference = use_default, typen
 } // end thrust
 
 
-// specialize std::iterator_traits to avoid problems with the name of
+// specialize thrust::iterator_traits to avoid problems with the name of
 // pointer's constructor shadowing its nested pointer type
 // do this before pointer is defined so the specialization is correctly
 // used inside the definition
-namespace std
+namespace thrust
 {
 
 template<typename Element, typename Tag, typename Reference, typename Derived>
@@ -54,7 +56,7 @@ template<typename Element, typename Tag, typename Reference, typename Derived>
     typedef typename ptr::reference         reference;
 }; // end iterator_traits
 
-} // end std
+} // end thrust
 
 
 namespace thrust
@@ -177,6 +179,13 @@ template<typename Element, typename Tag, typename Reference, typename Derived>
     __host__ __device__
     Element *get() const;
 }; // end pointer
+
+// Output stream operator
+template<typename Element, typename Tag, typename Reference, typename Derived,
+         typename charT, typename traits>
+std::basic_ostream<charT, traits> &
+operator<<(std::basic_ostream<charT, traits> &os,
+           const pointer<Element, Tag, Reference, Derived> &p);
 
 } // end thrust
 

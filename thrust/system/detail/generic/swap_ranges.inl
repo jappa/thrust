@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ namespace generic
 namespace detail
 {
 
+
 // XXX define this here rather than in internal_functional.h
 // to avoid circular dependence between swap.h & internal_functional.h
 struct swap_pair_elements
@@ -46,12 +47,15 @@ struct swap_pair_elements
   }
 }; // end swap_pair_elements
 
+
 } // end detail
 
-template<typename System,
+
+template<typename DerivedPolicy,
          typename ForwardIterator1,
          typename ForwardIterator2>
-  ForwardIterator2 swap_ranges(thrust::dispatchable<System> &system,
+__host__ __device__
+  ForwardIterator2 swap_ranges(thrust::execution_policy<DerivedPolicy> &exec,
                                ForwardIterator1 first1,
                                ForwardIterator1 last1,
                                ForwardIterator2 first2)
@@ -59,12 +63,13 @@ template<typename System,
   typedef thrust::tuple<ForwardIterator1,ForwardIterator2> IteratorTuple;
   typedef thrust::zip_iterator<IteratorTuple>              ZipIterator;
 
-  ZipIterator result = thrust::for_each(system,
+  ZipIterator result = thrust::for_each(exec,
                                         thrust::make_zip_iterator(thrust::make_tuple(first1, first2)),
                                         thrust::make_zip_iterator(thrust::make_tuple(last1,  first2)),
                                         detail::swap_pair_elements());
   return thrust::get<1>(result.get_iterator_tuple());
 } // end swap_ranges()
+
 
 } // end generic
 } // end detail

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,41 +14,10 @@
  *  limitations under the License.
  */
 
-
-/*! \file reduce.h
- *  \brief C++ implementation of reduce algorithms.
- */
-
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cpp/detail/tag.h>
-#include <thrust/system/detail/internal/scalar/reduce.h>
 
-namespace thrust
-{
-namespace system
-{
-namespace cpp
-{
-namespace detail
-{
-
-template<typename System,
-         typename InputIterator, 
-         typename OutputType,
-         typename BinaryFunction>
-  OutputType reduce(dispatchable<System> &,
-                    InputIterator begin,
-                    InputIterator end,
-                    OutputType init,
-                    BinaryFunction binary_op)
-{
-  return thrust::system::detail::internal::scalar::reduce(begin, end, init, binary_op);
-}
-
-} // end namespace detail
-} // end namespace cpp
-} // end namespace system
-} // end namespace thrust
+// this system inherits reduce
+#include <thrust/system/detail/sequential/reduce.h>
 

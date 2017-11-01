@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/omp/detail/tag.h>
+#include <thrust/system/omp/detail/execution_policy.h>
 
 namespace thrust
 {
@@ -34,11 +34,11 @@ namespace detail
 {
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator, 
          typename OutputType,
          typename BinaryFunction>
-  OutputType reduce(dispatchable<System> &system,
+  OutputType reduce(execution_policy<DerivedPolicy> &exec,
                     InputIterator first,
                     InputIterator last,
                     OutputType init,

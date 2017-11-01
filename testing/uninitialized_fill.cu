@@ -1,6 +1,7 @@
 #include <unittest/unittest.h>
 #include <thrust/uninitialized_fill.h>
 #include <thrust/device_malloc_allocator.h>
+#include <thrust/iterator/retag.h>
 
 
 template<typename ForwardIterator, typename T>
@@ -163,6 +164,7 @@ struct CopyConstructTest
 #endif
   }
 
+  __host__ __device__
   CopyConstructTest &operator=(const CopyConstructTest &x)
   {
     copy_constructed_on_host   = x.copy_constructed_on_host;

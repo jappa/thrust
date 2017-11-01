@@ -1,11 +1,10 @@
 #include <unittest/unittest.h>
 #include <thrust/count.h>
+#include <thrust/iterator/retag.h>
 
 template <class Vector>
 void TestCountSimple(void)
 {
-    typedef typename Vector::value_type T;
-
     Vector data(5);
     data[0] = 1; data[1] = 1; data[2] = 0; data[3] = 0; data[4] = 1;
 
@@ -67,8 +66,6 @@ DECLARE_VARIABLE_UNITTEST(TestCountIf);
 template <typename Vector>
 void TestCountFromConstIteratorSimple(void)
 {
-    typedef typename Vector::value_type T;
-
     Vector data(5);
     data[0] = 1; data[1] = 1; data[2] = 0; data[3] = 0; data[4] = 1;
 

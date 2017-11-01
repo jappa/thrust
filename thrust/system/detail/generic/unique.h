@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,36 +29,40 @@ namespace generic
 {
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator>
-ForwardIterator unique(thrust::dispatchable<System> &system,
+__host__ __device__
+ForwardIterator unique(thrust::execution_policy<DerivedPolicy> &exec,
                        ForwardIterator first,
                        ForwardIterator last);
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator,
          typename BinaryPredicate>
-ForwardIterator unique(thrust::dispatchable<System> &system,
+__host__ __device__
+ForwardIterator unique(thrust::execution_policy<DerivedPolicy> &exec,
                        ForwardIterator first,
                        ForwardIterator last,
                        BinaryPredicate binary_pred);
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator>
-OutputIterator unique_copy(thrust::dispatchable<System> &system,
+__host__ __device__
+OutputIterator unique_copy(thrust::execution_policy<DerivedPolicy> &exec,
                            InputIterator first,
                            InputIterator last,
                            OutputIterator output);
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename BinaryPredicate>
-OutputIterator unique_copy(thrust::dispatchable<System> &system,
+__host__ __device__
+OutputIterator unique_copy(thrust::execution_policy<DerivedPolicy> &exec,
                            InputIterator first,
                            InputIterator last,
                            OutputIterator output,

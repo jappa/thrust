@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,18 +30,25 @@ namespace detail
 namespace generic
 {
 
-template<typename System, typename InputIterator>
+
+template<typename DerivedPolicy, typename InputIterator>
+__host__ __device__
   typename thrust::iterator_traits<InputIterator>::value_type
-    reduce(thrust::dispatchable<System> &system, InputIterator first, InputIterator last);
+    reduce(thrust::execution_policy<DerivedPolicy> &exec, InputIterator first, InputIterator last);
 
-template<typename System, typename InputIterator, typename T>
-  T reduce(thrust::dispatchable<System> &system, InputIterator first, InputIterator last, T init);
 
-template<typename System,
+template<typename DerivedPolicy, typename InputIterator, typename T>
+__host__ __device__
+  T reduce(thrust::execution_policy<DerivedPolicy> &exec, InputIterator first, InputIterator last, T init);
+
+
+template<typename DerivedPolicy,
          typename InputIterator,
          typename T,
          typename BinaryFunction>
-  T reduce(thrust::dispatchable<System> &system, InputIterator first, InputIterator last, T init, BinaryFunction binary_op);
+__host__ __device__
+  T reduce(thrust::execution_policy<DerivedPolicy> &exec, InputIterator first, InputIterator last, T init, BinaryFunction binary_op);
+
 
 } // end namespace generic
 } // end namespace detail

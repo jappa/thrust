@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,45 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cpp/detail/tag.h>
-#include <thrust/pair.h>
-#include <thrust/system/detail/internal/scalar/unique.h>
 
-namespace thrust
-{
-namespace system
-{
-namespace cpp
-{
-namespace detail
-{
-
-template<typename System,
-         typename ForwardIterator,
-         typename BinaryPredicate>
-  ForwardIterator unique(dispatchable<System> &,
-                         ForwardIterator first,
-                         ForwardIterator last,
-                         BinaryPredicate binary_pred)
-{
-  return thrust::system::detail::internal::scalar::unique(first, last, binary_pred);
-}
-
-template<typename System,
-         typename InputIterator,
-         typename OutputIterator,
-         typename BinaryPredicate>
-  OutputIterator unique_copy(dispatchable<System> &,
-                             InputIterator first,
-                             InputIterator last,
-                             OutputIterator output,
-                             BinaryPredicate binary_pred)
-{
-  return thrust::system::detail::internal::scalar::unique_copy(first, last, output, binary_pred);
-}
-
-} // end namespace detail
-} // end namespace cpp 
-} // end namespace system
-} // end namespace thrust
+// this system inherits unique
+#include <thrust/system/detail/sequential/unique.h>
 

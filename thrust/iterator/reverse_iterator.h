@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 
-/*! \file reverse_iterator.h
+/*! \file thrust/iterator/reverse_iterator.h
  *  \brief An iterator adaptor which adapts another iterator to traverse backwards
  */
 
@@ -193,6 +193,7 @@ template<typename BidirectionalIterator>
   /*! \cond
    */
   private:
+    __thrust_exec_check_disable__
     __host__ __device__
     typename super_t::reference dereference(void) const;
 

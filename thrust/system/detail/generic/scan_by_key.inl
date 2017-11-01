@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -37,48 +37,52 @@ namespace generic
 namespace detail
 {
 
+
 template <typename OutputType, typename HeadFlagType, typename AssociativeOperator>
 struct segmented_scan_functor
 {
-    AssociativeOperator binary_op;
-
-    typedef typename thrust::tuple<OutputType, HeadFlagType> result_type;
-
-    __host__ __device__
-    segmented_scan_functor(AssociativeOperator _binary_op) : binary_op(_binary_op) {}
-
-    __host__ __device__
-    result_type operator()(result_type a, result_type b)
-    {
-        return result_type(thrust::get<1>(b) ? thrust::get<0>(b) : binary_op(thrust::get<0>(a), thrust::get<0>(b)),
-                           thrust::get<1>(a) | thrust::get<1>(b));
-    }
+  AssociativeOperator binary_op;
+  
+  typedef typename thrust::tuple<OutputType, HeadFlagType> result_type;
+  
+  __host__ __device__
+  segmented_scan_functor(AssociativeOperator _binary_op) : binary_op(_binary_op) {}
+  
+  __host__ __device__
+  result_type operator()(result_type a, result_type b)
+  {
+    return result_type(thrust::get<1>(b) ? thrust::get<0>(b) : binary_op(thrust::get<0>(a), thrust::get<0>(b)),
+                       thrust::get<1>(a) | thrust::get<1>(b));
+  }
 };
+
 
 } // end namespace detail
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator>
-  OutputIterator inclusive_scan_by_key(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator inclusive_scan_by_key(thrust::execution_policy<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
                                        OutputIterator result)
 {
   typedef typename thrust::iterator_traits<InputIterator1>::value_type InputType1;
-  return thrust::inclusive_scan_by_key(system, first1, last1, first2, result, thrust::equal_to<InputType1>());
+  return thrust::inclusive_scan_by_key(exec, first1, last1, first2, result, thrust::equal_to<InputType1>());
 }
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename BinaryPredicate>
-  OutputIterator inclusive_scan_by_key(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator inclusive_scan_by_key(thrust::execution_policy<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
@@ -86,17 +90,18 @@ template<typename System,
                                        BinaryPredicate binary_pred)
 {
   typedef typename thrust::iterator_traits<OutputIterator>::value_type OutputType;
-  return thrust::inclusive_scan_by_key(system, first1, last1, first2, result, binary_pred, thrust::plus<OutputType>());
+  return thrust::inclusive_scan_by_key(exec, first1, last1, first2, result, binary_pred, thrust::plus<OutputType>());
 }
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename BinaryPredicate,
          typename AssociativeOperator>
-  OutputIterator inclusive_scan_by_key(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator inclusive_scan_by_key(thrust::execution_policy<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
@@ -112,47 +117,48 @@ template<typename System,
   if(n != 0)
   {
     // compute head flags
-    thrust::detail::temporary_array<HeadFlagType,System> flags(system, n);
-    flags[0] = 1; thrust::transform(system, first1, last1 - 1, first1 + 1, flags.begin() + 1, thrust::detail::not2(binary_pred));
+    thrust::detail::temporary_array<HeadFlagType,DerivedPolicy> flags(exec, n);
+    flags[0] = 1; thrust::transform(exec, first1, last1 - 1, first1 + 1, flags.begin() + 1, thrust::detail::not2(binary_pred));
 
     // scan key-flag tuples, 
     // For additional details refer to Section 2 of the following paper
     //    S. Sengupta, M. Harris, and M. Garland. "Efficient parallel scan algorithms for GPUs"
     //    NVIDIA Technical Report NVR-2008-003, December 2008
     //    http://mgarland.org/files/papers/nvr-2008-003.pdf
-    thrust::inclusive_scan
-        (system,
-         thrust::make_zip_iterator(thrust::make_tuple(first2, flags.begin())),
-         thrust::make_zip_iterator(thrust::make_tuple(first2, flags.begin())) + n,
-         thrust::make_zip_iterator(thrust::make_tuple(result, flags.begin())),
-         detail::segmented_scan_functor<OutputType, HeadFlagType, AssociativeOperator>(binary_op));
+    thrust::inclusive_scan(exec,
+                           thrust::make_zip_iterator(thrust::make_tuple(first2, flags.begin())),
+                           thrust::make_zip_iterator(thrust::make_tuple(first2, flags.begin())) + n,
+                           thrust::make_zip_iterator(thrust::make_tuple(result, flags.begin())),
+                           detail::segmented_scan_functor<OutputType, HeadFlagType, AssociativeOperator>(binary_op));
   }
 
   return result + n;
 }
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator>
-  OutputIterator exclusive_scan_by_key(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan_by_key(thrust::execution_policy<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
                                        OutputIterator result)
 {
   typedef typename thrust::iterator_traits<OutputIterator>::value_type OutputType;
-  return thrust::exclusive_scan_by_key(system, first1, last1, first2, result, OutputType(0));
+  return thrust::exclusive_scan_by_key(exec, first1, last1, first2, result, OutputType(0));
 }
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename T>
-  OutputIterator exclusive_scan_by_key(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan_by_key(thrust::execution_policy<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
@@ -160,17 +166,18 @@ template<typename System,
                                        T init)
 {
   typedef typename thrust::iterator_traits<InputIterator1>::value_type InputType1;
-  return thrust::exclusive_scan_by_key(system, first1, last1, first2, result, init, thrust::equal_to<InputType1>());
+  return thrust::exclusive_scan_by_key(exec, first1, last1, first2, result, init, thrust::equal_to<InputType1>());
 }
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename T,
          typename BinaryPredicate>
-  OutputIterator exclusive_scan_by_key(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan_by_key(thrust::execution_policy<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
@@ -179,18 +186,19 @@ template<typename System,
                                        BinaryPredicate binary_pred)
 {
   typedef typename thrust::iterator_traits<OutputIterator>::value_type OutputType;
-  return thrust::exclusive_scan_by_key(system, first1, last1, first2, result, init, binary_pred, thrust::plus<OutputType>());
+  return thrust::exclusive_scan_by_key(exec, first1, last1, first2, result, init, binary_pred, thrust::plus<OutputType>());
 }
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename T,
          typename BinaryPredicate,
          typename AssociativeOperator>
-  OutputIterator exclusive_scan_by_key(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan_by_key(thrust::execution_policy<DerivedPolicy> &exec,
                                        InputIterator1 first1,
                                        InputIterator1 last1,
                                        InputIterator2 first2,
@@ -209,12 +217,12 @@ template<typename System,
     InputIterator2 last2 = first2 + n;
 
     // compute head flags
-    thrust::detail::temporary_array<HeadFlagType,System> flags(system, n);
-    flags[0] = 1; thrust::transform(system, first1, last1 - 1, first1 + 1, flags.begin() + 1, thrust::detail::not2(binary_pred));
+    thrust::detail::temporary_array<HeadFlagType,DerivedPolicy> flags(exec, n);
+    flags[0] = 1; thrust::transform(exec, first1, last1 - 1, first1 + 1, flags.begin() + 1, thrust::detail::not2(binary_pred));
 
     // shift input one to the right and initialize segments with init
-    thrust::detail::temporary_array<OutputType,System> temp(system, n);
-    thrust::replace_copy_if(system, first2, last2 - 1, flags.begin() + 1, temp.begin() + 1, thrust::negate<HeadFlagType>(), init);
+    thrust::detail::temporary_array<OutputType,DerivedPolicy> temp(exec, n);
+    thrust::replace_copy_if(exec, first2, last2 - 1, flags.begin() + 1, temp.begin() + 1, thrust::negate<HeadFlagType>(), init);
     temp[0] = init;
 
     // scan key-flag tuples, 
@@ -222,7 +230,7 @@ template<typename System,
     //    S. Sengupta, M. Harris, and M. Garland. "Efficient parallel scan algorithms for GPUs"
     //    NVIDIA Technical Report NVR-2008-003, December 2008
     //    http://mgarland.org/files/papers/nvr-2008-003.pdf
-    thrust::inclusive_scan(system,
+    thrust::inclusive_scan(exec,
                            thrust::make_zip_iterator(thrust::make_tuple(temp.begin(), flags.begin())),
                            thrust::make_zip_iterator(thrust::make_tuple(temp.begin(), flags.begin())) + n,
                            thrust::make_zip_iterator(thrust::make_tuple(result,       flags.begin())),
@@ -231,6 +239,7 @@ template<typename System,
 
   return result + n;
 }
+
 
 } // end namespace generic
 } // end namespace detail

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -31,16 +31,18 @@ namespace generic
 namespace detail
 {
 
+
 // this functor receives x, and returns a new_value if predicate(x) is true; otherwise,
 // it returns x
 template<typename Predicate, typename NewType, typename OutputType>
   struct new_value_if
 {
+  __host__ __device__
   new_value_if(Predicate p, NewType nv):pred(p),new_value(nv){}
 
   template<typename InputType>
   __host__ __device__
-  OutputType operator()(const InputType x) const
+  OutputType operator()(const InputType &x) const
   {
     return pred(x) ? new_value : x;
   } // end operator()()
@@ -49,7 +51,7 @@ template<typename Predicate, typename NewType, typename OutputType>
   // feeds its second argument to pred
   template<typename InputType, typename PredicateArgumentType>
   __host__ __device__
-  OutputType operator()(const InputType x, const PredicateArgumentType y)
+  OutputType operator()(const InputType &x, const PredicateArgumentType &y)
   {
     return pred(y) ? new_value : x;
   } // end operator()()
@@ -58,10 +60,12 @@ template<typename Predicate, typename NewType, typename OutputType>
   NewType new_value;
 }; // end new_value_if
 
+
 // this unary functor ignores its argument and returns a constant
 template<typename T>
   struct constant_unary
 {
+  __host__ __device__
   constant_unary(T _c):c(_c){}
 
   template<typename U>
@@ -74,25 +78,29 @@ template<typename T>
   T c;
 }; // end constant_unary
 
+
 } // end detail
 
-template<typename System, typename InputIterator, typename OutputIterator, typename Predicate, typename T>
-  OutputIterator replace_copy_if(thrust::dispatchable<System> &system,
+
+template<typename DerivedPolicy, typename InputIterator, typename OutputIterator, typename Predicate, typename T>
+__host__ __device__
+  OutputIterator replace_copy_if(thrust::execution_policy<DerivedPolicy> &exec,
                                  InputIterator first,
                                  InputIterator last,
                                  OutputIterator result,
                                  Predicate pred,
                                  const T &new_value)
 {
-  typedef typename thrust::iterator_traits<InputIterator>::value_type InputType;
   typedef typename thrust::iterator_traits<OutputIterator>::value_type OutputType;
 
   detail::new_value_if<Predicate,T,OutputType> op(pred,new_value);
-  return thrust::transform(system, first, last, result, op);
+  return thrust::transform(exec, first, last, result, op);
 } // end replace_copy_if()
 
-template<typename System, typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Predicate, typename T>
-  OutputIterator replace_copy_if(thrust::dispatchable<System> &system,
+
+template<typename DerivedPolicy, typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Predicate, typename T>
+__host__ __device__
+  OutputIterator replace_copy_if(thrust::execution_policy<DerivedPolicy> &exec,
                                  InputIterator1 first,
                                  InputIterator1 last,
                                  InputIterator2 stencil,
@@ -103,12 +111,13 @@ template<typename System, typename InputIterator1, typename InputIterator2, type
   typedef typename thrust::iterator_traits<OutputIterator>::value_type OutputType;
 
   detail::new_value_if<Predicate,T,OutputType> op(pred,new_value);
-  return thrust::transform(system, first, last, stencil, result, op);
+  return thrust::transform(exec, first, last, stencil, result, op);
 } // end replace_copy_if()
 
 
-template<typename System, typename InputIterator, typename OutputIterator, typename T>
-  OutputIterator replace_copy(thrust::dispatchable<System> &system,
+template<typename DerivedPolicy, typename InputIterator, typename OutputIterator, typename T>
+__host__ __device__
+  OutputIterator replace_copy(thrust::execution_policy<DerivedPolicy> &exec,
                               InputIterator first,
                               InputIterator last,
                               OutputIterator result,
@@ -116,26 +125,26 @@ template<typename System, typename InputIterator, typename OutputIterator, typen
                               const T &new_value)
 {
   thrust::detail::equal_to_value<T> pred(old_value);
-  return thrust::replace_copy_if(system, first, last, result, pred, new_value);
+  return thrust::replace_copy_if(exec, first, last, result, pred, new_value);
 } // end replace_copy()
 
-template<typename System, typename ForwardIterator, typename Predicate, typename T>
-  void replace_if(thrust::dispatchable<System> &system,
+
+template<typename DerivedPolicy, typename ForwardIterator, typename Predicate, typename T>
+__host__ __device__
+  void replace_if(thrust::execution_policy<DerivedPolicy> &exec,
                   ForwardIterator first,
                   ForwardIterator last,
                   Predicate pred,
                   const T &new_value)
 {
   detail::constant_unary<T> f(new_value);
-
-  // XXX replace this with generate_if:
-  // constant_nullary<T> f(new_value);
-  // generate_if(first, last, first, f, pred);
-  thrust::transform_if(system, first, last, first, first, f, pred);
+  thrust::transform_if(exec, first, last, first, first, f, pred);
 } // end replace_if()
 
-template<typename System, typename ForwardIterator, typename InputIterator, typename Predicate, typename T>
-  void replace_if(thrust::dispatchable<System> &system,
+
+template<typename DerivedPolicy, typename ForwardIterator, typename InputIterator, typename Predicate, typename T>
+__host__ __device__
+  void replace_if(thrust::execution_policy<DerivedPolicy> &exec,
                   ForwardIterator first,
                   ForwardIterator last,
                   InputIterator stencil,
@@ -143,23 +152,22 @@ template<typename System, typename ForwardIterator, typename InputIterator, type
                   const T &new_value)
 {
   detail::constant_unary<T> f(new_value);
-
-  // XXX replace this with generate_if:
-  // constant_nullary<T> f(new_value);
-  // generate_if(stencil, stencil + n, first, f, pred);
-  thrust::transform_if(system, first, last, stencil, first, f, pred);
+  thrust::transform_if(exec, first, last, stencil, first, f, pred);
 } // end replace_if()
 
-template<typename System, typename ForwardIterator, typename T>
-  void replace(thrust::dispatchable<System> &system,
+
+template<typename DerivedPolicy, typename ForwardIterator, typename T>
+__host__ __device__
+  void replace(thrust::execution_policy<DerivedPolicy> &exec,
                ForwardIterator first,
                ForwardIterator last,
                const T &old_value,
                const T &new_value)
 {
   thrust::detail::equal_to_value<T> pred(old_value);
-  return thrust::replace_if(system, first, last, pred, new_value);
+  return thrust::replace_if(exec, first, last, pred, new_value);
 } // end replace()
+
 
 } // end namespace generic
 } // end namespace detail

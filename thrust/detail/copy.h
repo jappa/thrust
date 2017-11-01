@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/detail/dispatchable.h>
+#include <thrust/detail/execution_policy.h>
 
 namespace thrust
 {
@@ -25,7 +25,8 @@ namespace thrust
 template<typename System,
          typename InputIterator,
          typename OutputIterator>
-  OutputIterator copy(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator copy(const thrust::detail::execution_policy_base<System> &system,
                       InputIterator first,
                       InputIterator last,
                       OutputIterator result);
@@ -34,7 +35,8 @@ template<typename System,
          typename InputIterator,
          typename Size,
          typename OutputIterator>
-  OutputIterator copy_n(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  OutputIterator copy_n(const thrust::detail::execution_policy_base<System> &system,
                         InputIterator first,
                         Size n,
                         OutputIterator result);
@@ -61,8 +63,9 @@ template<typename FromSystem,
          typename ToSystem,
          typename InputIterator,
          typename OutputIterator>
-  OutputIterator two_system_copy(thrust::dispatchable<FromSystem> &from_system,
-                                 thrust::dispatchable<ToSystem>   &two_system,
+__host__ __device__
+  OutputIterator two_system_copy(const thrust::execution_policy<FromSystem> &from_system,
+                                 const thrust::execution_policy<ToSystem>   &two_system,
                                  InputIterator first,
                                  InputIterator last,
                                  OutputIterator result);
@@ -73,8 +76,9 @@ template<typename FromSystem,
          typename InputIterator,
          typename Size,
          typename OutputIterator>
-  OutputIterator two_system_copy_n(thrust::dispatchable<FromSystem> &from_system,
-                                   thrust::dispatchable<ToSystem>   &two_system,
+__host__ __device__
+  OutputIterator two_system_copy_n(const thrust::execution_policy<FromSystem> &from_system,
+                                   const thrust::execution_policy<ToSystem>   &two_system,
                                    InputIterator first,
                                    Size n,
                                    OutputIterator result);

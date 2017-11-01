@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -31,10 +31,11 @@ namespace generic
 {
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator,
          typename UnaryOperation>
-  void tabulate(thrust::dispatchable<System> &system,
+__host__ __device__
+  void tabulate(thrust::execution_policy<DerivedPolicy> &exec,
                 ForwardIterator first,
                 ForwardIterator last,
                 UnaryOperation unary_op)
@@ -47,7 +48,7 @@ template<typename System,
   // to avoid this, specify the counting_iterator's difference_type to be the same as ForwardIterator's.
   thrust::counting_iterator<difference_type, thrust::use_default, thrust::use_default, difference_type> iter(0);
 
-  thrust::transform(system, iter, iter + thrust::distance(first, last), first, unary_op);
+  thrust::transform(exec, iter, iter + thrust::distance(first, last), first, unary_op);
 } // end tabulate()
 
 

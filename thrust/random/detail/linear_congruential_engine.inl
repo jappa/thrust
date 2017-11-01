@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ namespace random
 
 
 template<typename UIntType, UIntType a, UIntType c, UIntType m>
+  __host__ __device__
   linear_congruential_engine<UIntType,a,c,m>
     ::linear_congruential_engine(result_type s)
 {
@@ -34,6 +35,7 @@ template<typename UIntType, UIntType a, UIntType c, UIntType m>
 
 
 template<typename UIntType, UIntType a, UIntType c, UIntType m>
+  __host__ __device__
   void linear_congruential_engine<UIntType,a,c,m>
     ::seed(result_type s)
 {
@@ -46,6 +48,7 @@ template<typename UIntType, UIntType a, UIntType c, UIntType m>
 
 
 template<typename UIntType, UIntType a, UIntType c, UIntType m>
+  __host__ __device__
   typename linear_congruential_engine<UIntType,a,c,m>::result_type
     linear_congruential_engine<UIntType,a,c,m>
       ::operator()(void)
@@ -56,6 +59,7 @@ template<typename UIntType, UIntType a, UIntType c, UIntType m>
 
 
 template<typename UIntType, UIntType a, UIntType c, UIntType m>
+  __host__ __device__
   void linear_congruential_engine<UIntType,a,c,m>
     ::discard(unsigned long long z)
 {
@@ -113,6 +117,7 @@ template<typename UIntType, UIntType a, UIntType c, UIntType m>
 
 
 template<typename UIntType, UIntType a, UIntType c, UIntType m>
+__host__ __device__
 bool linear_congruential_engine<UIntType,a,c,m>
   ::equal(const linear_congruential_engine<UIntType,a,c,m> &rhs) const
 {
@@ -130,6 +135,7 @@ bool operator==(const linear_congruential_engine<UIntType_,a_,c_,m_> &lhs,
 
 
 template<typename UIntType, UIntType a, UIntType c, UIntType m>
+__host__ __device__
 bool operator!=(const linear_congruential_engine<UIntType,a,c,m> &lhs,
                 const linear_congruential_engine<UIntType,a,c,m> &rhs)
 {

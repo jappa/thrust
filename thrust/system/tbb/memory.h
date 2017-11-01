@@ -1,8 +1,8 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in ctbbliance with the License.
+ *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -21,7 +21,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/tbb/detail/tag.h>
+#include <thrust/system/tbb/execution_policy.h>
 #include <thrust/memory.h>
 #include <thrust/detail/type_traits.h>
 #include <thrust/detail/allocator/malloc_allocator.h>
@@ -44,11 +44,11 @@ template<typename> class pointer;
 /*! \cond
  */
 
-// specialize std::iterator_traits to avoid problems with the name of
+// specialize thrust::iterator_traits to avoid problems with the name of
 // pointer's constructor shadowing its nested pointer type
 // do this before pointer is defined so the specialization is correctly
 // used inside the definition
-namespace std
+namespace thrust
 {
 
 template<typename Element>
@@ -65,7 +65,7 @@ template<typename Element>
     typedef typename ptr::reference               reference;
 }; // end iterator_traits
 
-} // end std
+} // end thrust
 
 /*! \endcond
  */
@@ -114,15 +114,6 @@ template<typename Element>
 /*! \endcond
  */
 
-#if 0
-/*! \p tbb::tag is type representing Thrust's TBB backend system in C++'s type system.
- *  Iterators "tagged" with a type which is convertible to \p tbb::tag assert that they may be
- *  "dispatched" to algorithm implementations in the \p tbb system.
- *
- *  \p tbb::tag is convertible to \p cpp::tag.
- */
-struct tag { unspecified };
-#endif
 
 /*! \p pointer stores a pointer to an object allocated in memory available to the tbb system.
  *  This type provides type safety when dispatching standard algorithms on ranges resident
@@ -420,7 +411,4 @@ using thrust::system::tbb::allocator;
 } // end thrust
 
 #include <thrust/system/tbb/detail/memory.inl>
-
-// make the backend's entry points available to dispatch
-#include <thrust/system/tbb/detail/adl_targets.h>
 

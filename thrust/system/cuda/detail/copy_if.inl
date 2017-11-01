@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/copy_if.h>
+#include <thrust/detail/seq.h>
+#include <thrust/system/cuda/detail/bulk.h>
 #include <thrust/iterator/iterator_traits.h>
 #include <thrust/iterator/transform_iterator.h>
 #include <thrust/detail/minmax.h>
@@ -26,11 +29,12 @@
 #include <thrust/system/cuda/detail/reduce_intervals.h>
 #include <thrust/system/cuda/detail/block/inclusive_scan.h>
 #include <thrust/system/cuda/detail/detail/launch_closure.h>
-#include <thrust/system/cuda/detail/tag.h>
+#include <thrust/system/cuda/detail/execution_policy.h>
 #include <thrust/functional.h>
 
 
 __THRUST_DISABLE_MSVC_POSSIBLE_LOSS_OF_DATA_WARNING_BEGIN
+
 
 namespace thrust
 {
@@ -40,13 +44,16 @@ namespace cuda
 {
 namespace detail
 {
+namespace copy_if_detail
+{
 
-template <typename InputIterator1,
-          typename InputIterator2,
-          typename InputIterator3,
-          typename Decomposition,
-          typename OutputIterator,
-          typename Context>
+
+template<typename InputIterator1,
+         typename InputIterator2,
+         typename InputIterator3,
+         typename Decomposition,
+         typename OutputIterator,
+         typename Context>
 struct copy_if_intervals_closure
 {
   InputIterator1 input;
@@ -58,6 +65,7 @@ struct copy_if_intervals_closure
   typedef Context context_type;
   context_type context;
   
+  __host__ __device__
   copy_if_intervals_closure(InputIterator1 input,
                             InputIterator2 stencil,
                             InputIterator3 offsets,
@@ -69,8 +77,6 @@ struct copy_if_intervals_closure
   __device__ __thrust_forceinline__
   void operator()(void)
   {
-    typedef typename thrust::iterator_value<OutputIterator>::type OutputType;
-   
     typedef unsigned int PredicateType;
     
     const unsigned int CTA_SIZE = context_type::ThreadsPerBlock::value;
@@ -93,91 +99,97 @@ struct copy_if_intervals_closure
     stencil += base + context.thread_index();
 
     // advance output to this interval's starting position
-    if (context.block_index() != 0)
+    if(context.block_index() != 0)
     {
-        InputIterator3 temp = offsets + (context.block_index() - 1);
-        output += *temp;
+      InputIterator3 temp = offsets + (context.block_index() - 1);
+      output += *temp;
     }
 
     // process full blocks
     while(base + CTA_SIZE <= range.end())
     {
-        // read data
-        sdata[context.thread_index()] = predicate = *stencil;
+      // read data
+      sdata[context.thread_index()] = predicate = *stencil;
       
-        context.barrier();
+      context.barrier();
 
-        // scan block
-        block::inclusive_scan(context, sdata, binary_op);
-       
-        // write data
-        if (predicate)
-        {
-            OutputIterator temp2 = output + (sdata[context.thread_index()] - 1);
-            *temp2 = *input;
-        }
+      // scan block
+      block::inclusive_scan(context, sdata, binary_op);
+      
+      // write data
+      if(predicate)
+      {
+        OutputIterator temp2 = output + (sdata[context.thread_index()] - 1);
+        *temp2 = *input;
+      }
 
-        // advance inputs by CTA_SIZE
-        base    += CTA_SIZE;
-        input   += CTA_SIZE;
-        stencil += CTA_SIZE;
+      // advance inputs by CTA_SIZE
+      base    += CTA_SIZE;
+      input   += CTA_SIZE;
+      stencil += CTA_SIZE;
 
-        // advance output by number of true predicates
-        output += sdata[CTA_SIZE - 1];
+      // advance output by number of true predicates
+      output += sdata[CTA_SIZE - 1];
 
-        context.barrier();
+      context.barrier();
     }
 
     // process partially full block at end of input (if necessary)
-    if (base < range.end())
+    if(base < range.end())
     {
-        // read data
-        if (base + context.thread_index() < range.end())
-            sdata[context.thread_index()] = predicate = *stencil;
-        else
-            sdata[context.thread_index()] = predicate = 0;
-       
-        context.barrier();
+      // read data
+      if(base + context.thread_index() < range.end())
+      {
+        sdata[context.thread_index()] = predicate = *stencil;
+      }
+      else
+      {
+        sdata[context.thread_index()] = predicate = 0;
+      }
+      
+      context.barrier();
 
-        // scan block
-        block::inclusive_scan(context, sdata, binary_op);
-       
-        // write data
-        if (predicate) // expects predicate=false for >= interval_end
-        {
-            OutputIterator temp2 = output + (sdata[context.thread_index()] - 1);
-            *temp2 = *input;
-        }
+      // scan block
+      block::inclusive_scan(context, sdata, binary_op);
+      
+      // write data
+      if(predicate) // expects predicate=false for >= interval_end
+      {
+        OutputIterator temp2 = output + (sdata[context.thread_index()] - 1);
+        *temp2 = *input;
+      }
     }
   }
 }; // copy_if_intervals_closure
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename Predicate>
-   OutputIterator copy_if(dispatchable<System> &system,
-                          InputIterator1 first,
-                          InputIterator1 last,
-                          InputIterator2 stencil,
-                          OutputIterator output,
-                          Predicate pred)
+__host__ __device__
+OutputIterator copy_if(execution_policy<DerivedPolicy> &exec,
+                       InputIterator1 first,
+                       InputIterator1 last,
+                       InputIterator2 stencil,
+                       OutputIterator output,
+                       Predicate pred)
 {
   typedef typename thrust::iterator_difference<InputIterator1>::type IndexType;
-  typedef typename thrust::iterator_value<OutputIterator>::type      OutputType;
 
-  if (first == last)
-      return output;
+  if(first == last)
+  {
+    return output;
+  }
 
   typedef thrust::system::detail::internal::uniform_decomposition<IndexType> Decomposition;
-  typedef thrust::detail::temporary_array<IndexType, System>                 IndexArray;
+  typedef thrust::detail::temporary_array<IndexType, DerivedPolicy>          IndexArray;
 
   Decomposition decomp = default_decomposition(last - first);
 
   // storage for per-block predicate counts
-  IndexArray block_results(system, decomp.size());
+  IndexArray block_results(exec, decomp.size());
 
   // convert stencil into an iterator that produces integral values in {0,1}
   typedef typename thrust::detail::predicate_to_integral<Predicate,IndexType>              PredicateToIndexTransform;
@@ -186,10 +198,10 @@ template<typename System,
   PredicateToIndexIterator predicate_stencil(stencil, PredicateToIndexTransform(pred));
 
   // compute number of true values in each interval
-  thrust::system::cuda::detail::reduce_intervals(system, predicate_stencil, block_results.begin(), thrust::plus<IndexType>(), decomp);
+  thrust::system::cuda::detail::reduce_intervals(exec, predicate_stencil, block_results.begin(), thrust::plus<IndexType>(), decomp);
 
   // scan the partial sums
-  thrust::inclusive_scan(system, block_results.begin(), block_results.end(), block_results.begin(), thrust::plus<IndexType>());
+  thrust::inclusive_scan(exec, block_results.begin(), block_results.end(), block_results.begin(), thrust::plus<IndexType>());
 
   // copy values to output
   const unsigned int ThreadsPerBlock = 256;
@@ -197,9 +209,65 @@ template<typename System,
   typedef detail::statically_blocked_thread_array<ThreadsPerBlock> Context;
   typedef copy_if_intervals_closure<InputIterator1,PredicateToIndexIterator,InputIterator3,Decomposition,OutputIterator,Context> Closure;
   Closure closure(first, predicate_stencil, block_results.begin(), decomp, output);
-  detail::launch_closure(closure, decomp.size(), ThreadsPerBlock);
+  detail::launch_closure(exec, closure, decomp.size(), ThreadsPerBlock);
 
-  return output + block_results[decomp.size() - 1];
+  return output + get_value(exec,&block_results[decomp.size() - 1]);
+} // end copy_if()
+
+
+} // end copy_if_detail
+
+
+template<typename DerivedPolicy,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator,
+         typename Predicate>
+__host__ __device__
+OutputIterator copy_if(execution_policy<DerivedPolicy> &exec,
+                       InputIterator1 first,
+                       InputIterator1 last,
+                       InputIterator2 stencil,
+                       OutputIterator output,
+                       Predicate pred)
+{
+  // we're attempting to launch a kernel, assert we're compiling with nvcc
+  // ========================================================================
+  // X Note to the user: If you've found this line due to a compiler error, X
+  // X you need to compile your code using nvcc, rather than g++ or cl.exe  X
+  // ========================================================================
+  THRUST_STATIC_ASSERT( (thrust::detail::depend_on_instantiation<InputIterator1, THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC>::value) );
+
+  struct workaround
+  {
+    __host__ __device__
+    static OutputIterator parallel_path(execution_policy<DerivedPolicy> &exec,
+                                        InputIterator1 first,
+                                        InputIterator1 last,
+                                        InputIterator2 stencil,
+                                        OutputIterator output,
+                                        Predicate pred)
+    {
+      return thrust::system::cuda::detail::copy_if_detail::copy_if(exec, first, last, stencil, output, pred);
+    } // end parallel_path()
+
+    __host__ __device__
+    static OutputIterator sequential_path(execution_policy<DerivedPolicy> &,
+                                          InputIterator1 first,
+                                          InputIterator1 last,
+                                          InputIterator2 stencil,
+                                          OutputIterator output,
+                                          Predicate pred)
+    {
+      return thrust::copy_if(thrust::seq, first, last, stencil, output, pred);
+    } // end parallel_path()
+  }; // end workaround
+
+#if __BULK_HAS_CUDART__
+  return workaround::parallel_path(exec, first, last, stencil, output, pred);
+#else
+  return workaround::sequential_path(exec, first, last, stencil, output, pred);
+#endif
 } // end copy_if()
 
 

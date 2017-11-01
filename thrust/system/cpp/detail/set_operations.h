@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,89 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cpp/detail/tag.h>
-#include <thrust/system/detail/internal/scalar/set_operations.h>
 
-namespace thrust
-{
-namespace system
-{
-namespace cpp
-{
-namespace detail
-{
-
-
-template<typename System,
-         typename InputIterator1,
-         typename InputIterator2,
-         typename OutputIterator,
-         typename StrictWeakOrdering>
-  OutputIterator set_difference(dispatchable<System> &,
-                                InputIterator1 first1,
-                                InputIterator1 last1,
-                                InputIterator2 first2,
-                                InputIterator2 last2,
-                                OutputIterator result,
-                                StrictWeakOrdering comp)
-{
-  return thrust::system::detail::internal::scalar::set_difference(first1, last1, first2, last2, result, comp);
-}
-
-
-template<typename System,
-         typename InputIterator1,
-         typename InputIterator2,
-         typename OutputIterator,
-         typename StrictWeakOrdering>
-  OutputIterator set_intersection(dispatchable<System> &,
-                                  InputIterator1 first1,
-                                  InputIterator1 last1,
-                                  InputIterator2 first2,
-                                  InputIterator2 last2,
-                                  OutputIterator result,
-                                  StrictWeakOrdering comp)
-{
-  return thrust::system::detail::internal::scalar::set_intersection(first1, last1, first2, last2, result, comp);
-}
-
-
-template<typename System,
-         typename InputIterator1,
-         typename InputIterator2,
-         typename OutputIterator,
-         typename StrictWeakOrdering>
-  OutputIterator set_symmetric_difference(dispatchable<System> &,
-                                          InputIterator1 first1,
-                                          InputIterator1 last1,
-                                          InputIterator2 first2,
-                                          InputIterator2 last2,
-                                          OutputIterator result,
-                                          StrictWeakOrdering comp)
-{
-  return thrust::system::detail::internal::scalar::set_symmetric_difference(first1, last1, first2, last2, result, comp);
-}
-
-
-template<typename System,
-         typename InputIterator1,
-         typename InputIterator2,
-         typename OutputIterator,
-         typename StrictWeakOrdering>
-  OutputIterator set_union(dispatchable<System> &,
-                           InputIterator1 first1,
-                           InputIterator1 last1,
-                           InputIterator2 first2,
-                           InputIterator2 last2,
-                           OutputIterator result,
-                           StrictWeakOrdering comp)
-{
-  return thrust::system::detail::internal::scalar::set_union(first1, last1, first2, last2, result, comp);
-}
-
-
-} // end namespace detail
-} // end namespace cpp
-} // end namespace system
-} // end namespace thrust
+// this system inherits the set operations
+#include <thrust/system/detail/sequential/set_operations.h>
 

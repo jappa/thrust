@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,23 +29,26 @@ namespace detail
 namespace generic
 {
 
-template<typename System,
+
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename RandomAccessIterator>
-  void scatter(thrust::dispatchable<System> &system,
+__host__ __device__
+  void scatter(thrust::execution_policy<DerivedPolicy> &exec,
                InputIterator1 first,
                InputIterator1 last,
                InputIterator2 map,
                RandomAccessIterator output);
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename InputIterator3,
          typename RandomAccessIterator>
-  void scatter_if(thrust::dispatchable<System> &system,
+__host__ __device__
+  void scatter_if(thrust::execution_policy<DerivedPolicy> &exec,
                   InputIterator1 first,
                   InputIterator1 last,
                   InputIterator2 map,
@@ -53,19 +56,21 @@ template<typename System,
                   RandomAccessIterator output);
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename InputIterator3,
          typename RandomAccessIterator,
          typename Predicate>
-  void scatter_if(thrust::dispatchable<System> &system,
+__host__ __device__
+  void scatter_if(thrust::execution_policy<DerivedPolicy> &exec,
                   InputIterator1 first,
                   InputIterator1 last,
                   InputIterator2 map,
                   InputIterator3 stencil,
                   RandomAccessIterator output,
                   Predicate pred);
+
 
 } // end namespace generic
 } // end namespace detail

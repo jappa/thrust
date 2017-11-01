@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,18 +29,19 @@
 namespace thrust
 {
 
-
-template<typename System,
+__thrust_exec_check_disable__ 
+template<typename DerivedPolicy,
          typename InputIterator,
          typename UnaryFunction>
-  InputIterator for_each(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  InputIterator for_each(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                          InputIterator first,
                          InputIterator last,
                          UnaryFunction f)
 {
   using thrust::system::detail::generic::for_each;
 
-  return for_each(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, f);
+  return for_each(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, f);
 }
 
 
@@ -57,16 +58,17 @@ InputIterator for_each(InputIterator first,
   return thrust::for_each(select_system(system), first, last, f);
 } // end for_each()
 
-
-template<typename System, typename InputIterator, typename Size, typename UnaryFunction>
-  InputIterator for_each_n(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__ 
+template<typename DerivedPolicy, typename InputIterator, typename Size, typename UnaryFunction>
+__host__ __device__
+  InputIterator for_each_n(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                            InputIterator first,
                            Size n,
                            UnaryFunction f)
 {
   using thrust::system::detail::generic::for_each_n;
 
-  return for_each_n(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, n, f);
+  return for_each_n(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, n, f);
 } // end for_each_n()
 
 

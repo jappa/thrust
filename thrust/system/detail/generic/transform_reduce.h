@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,17 +29,20 @@ namespace detail
 namespace generic
 {
 
-template<typename System,
+
+template<typename ExecutionPolicy,
          typename InputIterator, 
          typename UnaryFunction, 
          typename OutputType,
          typename BinaryFunction>
-  OutputType transform_reduce(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputType transform_reduce(thrust::execution_policy<ExecutionPolicy> &exec,
                               InputIterator first,
                               InputIterator last,
                               UnaryFunction unary_op,
                               OutputType init,
                               BinaryFunction binary_op);
+
 
 } // end namespace generic
 } // end namespace detail

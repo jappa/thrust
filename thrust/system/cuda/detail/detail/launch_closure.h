@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #include <thrust/detail/type_traits.h>
 #include <thrust/detail/minmax.h>
 #include <thrust/system/cuda/detail/cuda_launch_config.h>
+#include <thrust/system/cuda/detail/execution_policy.h>
 
 namespace thrust
 {
@@ -32,13 +33,15 @@ namespace detail
 namespace detail
 {
 
-template <unsigned int _ThreadsPerBlock = 0,
-          unsigned int _BlocksPerMultiprocessor = 0>
+
+template<unsigned int _ThreadsPerBlock = 0,
+         unsigned int _BlocksPerMultiprocessor = 0>
 struct launch_bounds
 {
   typedef thrust::detail::integral_constant<unsigned int, _ThreadsPerBlock>         ThreadsPerBlock;
   typedef thrust::detail::integral_constant<unsigned int, _BlocksPerMultiprocessor> BlocksPerMultiprocessor;
 };
+
 
 struct thread_array : public launch_bounds<>
 {
@@ -51,6 +54,7 @@ struct thread_array : public launch_bounds<>
   __device__ __thrust_forceinline__ unsigned int thread_count(void) const { return 0; } 
 #endif // THRUST_DEVICE_COMPILER_NVCC
 };
+
 
 struct blocked_thread_array : public launch_bounds<>
 {
@@ -115,17 +119,25 @@ struct statically_blocked_thread_array : public launch_bounds<_ThreadsPerBlock,1
 #endif // THRUST_DEVICE_COMPILER_NVCC
 };
 
-template<typename Closure, typename Size1, typename Size2>
-  void launch_closure(Closure f, Size1 num_blocks, Size2 block_size);
+template<typename DerivedPolicy, typename Closure, typename Size>
+__host__ __device__
+void launch_closure(execution_policy<DerivedPolicy> &exec, Closure f, Size num_blocks);
 
-template<typename Closure, typename Size1, typename Size2, typename Size3>
-  void launch_closure(Closure f, Size1 num_blocks, Size2 block_size, Size3 smem_size);
+template<typename DerivedPolicy, typename Closure, typename Size1, typename Size2>
+__host__ __device__
+void launch_closure(execution_policy<DerivedPolicy> &exec, Closure f, Size1 num_blocks, Size2 block_size);
+
+template<typename DerivedPolicy, typename Closure, typename Size1, typename Size2, typename Size3>
+__host__ __device__
+void launch_closure(execution_policy<DerivedPolicy> &exec, Closure f, Size1 num_blocks, Size2 block_size, Size3 smem_size);
 
 /*! Returns a copy of the cudaFuncAttributes structure
  *  that is associated with a given Closure
  */
-template <typename Closure>
+template<typename Closure>
+__host__ __device__
 function_attributes_t closure_attributes(void);
+
 
 } // end namespace detail
 } // end namespace detail

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,22 +30,25 @@ namespace generic
 {
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator>
-  void sequence(thrust::dispatchable<System> &system,
+__host__ __device__
+  void sequence(thrust::execution_policy<DerivedPolicy> &exec,
                 ForwardIterator first,
                 ForwardIterator last);
 
 
-template<typename System, typename ForwardIterator, typename T>
-  void sequence(thrust::dispatchable<System> &system,
+template<typename DerivedPolicy, typename ForwardIterator, typename T>
+__host__ __device__
+  void sequence(thrust::execution_policy<DerivedPolicy> &exec,
                 ForwardIterator first,
                 ForwardIterator last,
                 T init);
 
 
-template<typename System, typename ForwardIterator, typename T>
-  void sequence(thrust::dispatchable<System> &system,
+template<typename DerivedPolicy, typename ForwardIterator, typename T>
+__host__ __device__
+  void sequence(thrust::execution_policy<DerivedPolicy> &exec,
                 ForwardIterator first,
                 ForwardIterator last,
                 T init,

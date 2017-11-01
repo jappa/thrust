@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -28,47 +28,51 @@ namespace detail
 namespace generic
 {
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename UnaryFunction>
-  OutputIterator transform(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator transform(thrust::execution_policy<DerivedPolicy> &exec,
                            InputIterator first,
                            InputIterator last,
                            OutputIterator result,
                            UnaryFunction op);
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename BinaryFunction>
-  OutputIterator transform(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator transform(thrust::execution_policy<DerivedPolicy> &exec,
                            InputIterator1 first1,
                            InputIterator1 last1,
                            InputIterator2 first2,
                            OutputIterator result,
                            BinaryFunction op);
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator,
          typename ForwardIterator,
          typename UnaryFunction,
          typename Predicate>
-  ForwardIterator transform_if(thrust::dispatchable<System> &system,
+__host__ __device__
+  ForwardIterator transform_if(thrust::execution_policy<DerivedPolicy> &exec,
                                InputIterator first,
                                InputIterator last,
                                ForwardIterator result,
                                UnaryFunction unary_op,
                                Predicate pred);
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename ForwardIterator,
          typename UnaryFunction,
          typename Predicate>
-  ForwardIterator transform_if(thrust::dispatchable<System> &system,
+__host__ __device__
+  ForwardIterator transform_if(thrust::execution_policy<DerivedPolicy> &exec,
                                InputIterator1 first,
                                InputIterator1 last,
                                InputIterator2 stencil,
@@ -76,14 +80,15 @@ template<typename System,
                                UnaryFunction unary_op,
                                Predicate pred);
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename InputIterator3,
          typename ForwardIterator,
          typename BinaryFunction,
          typename Predicate>
-  ForwardIterator transform_if(thrust::dispatchable<System> &system,
+__host__ __device__
+  ForwardIterator transform_if(thrust::execution_policy<DerivedPolicy> &exec,
                                InputIterator1 first1,
                                InputIterator1 last1,
                                InputIterator2 first2,

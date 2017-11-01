@@ -58,7 +58,7 @@ int main(void)
 {
   // generate random data serially
   thrust::host_vector<int> h_vec(100);
-  std:generate(h_vec.begin(), h_vec.end(), rand);
+  std::generate(h_vec.begin(), h_vec.end(), rand);
 
   // transfer to device and compute sum
   thrust::device_vector<int> d_vec = h_vec;
@@ -72,4 +72,4 @@ Refer to the [Quick Start Guide](http://github.com/thrust/thrust/wiki/Quick-Star
 Contributors
 ------------
 
-The primary developers of Thrust are [Jared Hoberock](http://github.com/jaredhoberock) and [Nathan Bell](http://research.nvidia.com/users/nathan-bell).
+The original creators of Thrust are [Jared Hoberock](http://github.com/jaredhoberock) and [Nathan Bell](http://research.nvidia.com/users/nathan-bell).

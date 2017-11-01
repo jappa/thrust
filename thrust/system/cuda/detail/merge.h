@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cuda/detail/tag.h>
+#include <thrust/system/cuda/detail/execution_policy.h>
 
 namespace thrust
 {
@@ -28,18 +28,21 @@ namespace cuda
 namespace detail
 {
 
-template<typename System,
+
+template<typename DerivedPolicy,
          typename RandomAccessIterator1,
          typename RandomAccessIterator2,
          typename RandomAccessIterator3,
          typename StrictWeakOrdering>
-  RandomAccessIterator3 merge(dispatchable<System> &system,
-                              RandomAccessIterator1 first1,
-                              RandomAccessIterator1 last1,
-                              RandomAccessIterator2 first2,
-                              RandomAccessIterator2 last2,
-                              RandomAccessIterator3 result,
-                              StrictWeakOrdering comp);
+__host__ __device__
+RandomAccessIterator3 merge(execution_policy<DerivedPolicy> &exec,
+                            RandomAccessIterator1 first1,
+                            RandomAccessIterator1 last1,
+                            RandomAccessIterator2 first2,
+                            RandomAccessIterator2 last2,
+                            RandomAccessIterator3 result,
+                            StrictWeakOrdering comp);
+
 
 } // end detail
 } // end cuda

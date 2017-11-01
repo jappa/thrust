@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cuda/detail/tag.h>
+#include <thrust/system/cuda/detail/execution_policy.h>
+#include <thrust/functional.h>
 
 namespace thrust
 {
@@ -30,19 +31,46 @@ namespace detail
 namespace detail
 {
 
-template<typename System,
-         typename RandomAccessIterator>
-void stable_primitive_sort(dispatchable<System> &system,
-                           RandomAccessIterator first,
-                           RandomAccessIterator last);
 
-template<typename System,
+template<typename DerivedPolicy,
+         typename RandomAccessIterator>
+__host__ __device__
+void stable_primitive_sort(execution_policy<DerivedPolicy> &exec,
+                           RandomAccessIterator first,
+                           RandomAccessIterator last,
+                           thrust::less<typename thrust::iterator_value<RandomAccessIterator>::type>);
+
+
+template<typename DerivedPolicy,
+         typename RandomAccessIterator>
+__host__ __device__
+void stable_primitive_sort(execution_policy<DerivedPolicy> &exec,
+                           RandomAccessIterator first,
+                           RandomAccessIterator last,
+                           thrust::greater<typename thrust::iterator_value<RandomAccessIterator>::type>);
+
+
+template<typename DerivedPolicy,
          typename RandomAccessIterator1,
          typename RandomAccessIterator2>
-void stable_primitive_sort_by_key(dispatchable<System> &system,
+__host__ __device__
+void stable_primitive_sort_by_key(execution_policy<DerivedPolicy> &exec,
                                   RandomAccessIterator1 keys_first,
                                   RandomAccessIterator1 keys_last,
-                                  RandomAccessIterator2 values_first);
+                                  RandomAccessIterator2 values_first,
+                                  thrust::less<typename thrust::iterator_value<RandomAccessIterator1>::type>);
+
+
+template<typename DerivedPolicy,
+         typename RandomAccessIterator1,
+         typename RandomAccessIterator2>
+__host__ __device__
+void stable_primitive_sort_by_key(execution_policy<DerivedPolicy> &exec,
+                                  RandomAccessIterator1 keys_first,
+                                  RandomAccessIterator1 keys_last,
+                                  RandomAccessIterator2 values_first,
+                                  thrust::greater<typename thrust::iterator_value<RandomAccessIterator1>::type>);
+
 
 } // end namespace detail
 } // end namespace detail

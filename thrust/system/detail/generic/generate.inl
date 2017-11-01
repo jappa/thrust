@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,27 +29,29 @@ namespace detail
 namespace generic
 {
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename ForwardIterator,
          typename Generator>
-  void generate(thrust::dispatchable<System> &system,
+__host__ __device__
+  void generate(thrust::execution_policy<ExecutionPolicy> &exec,
                 ForwardIterator first,
                 ForwardIterator last,
                 Generator gen)
 {
-  thrust::for_each(system, first, last, typename thrust::detail::generate_functor<System,Generator>::type(gen));
+  thrust::for_each(exec, first, last, typename thrust::detail::generate_functor<ExecutionPolicy,Generator>::type(gen));
 } // end generate()
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename OutputIterator,
          typename Size,
          typename Generator>
-  OutputIterator generate_n(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator generate_n(thrust::execution_policy<ExecutionPolicy> &exec,
                             OutputIterator first,
                             Size n,
                             Generator gen)
 {
-  return thrust::for_each_n(system, first, n, typename thrust::detail::generate_functor<System,Generator>::type(gen));
+  return thrust::for_each_n(exec, first, n, typename thrust::detail::generate_functor<ExecutionPolicy,Generator>::type(gen));
 } // end generate()
 
 } // end namespace generic
