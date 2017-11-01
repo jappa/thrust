@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cuda/detail/tag.h>
+#include <thrust/system/cuda/detail/execution_policy.h>
 
 namespace thrust
 {
@@ -33,27 +33,32 @@ namespace cuda
 namespace detail
 {
 
-template<typename System,
+
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename AssociativeOperator>
-  OutputIterator inclusive_scan(dispatchable<System> &system,
-                                InputIterator first,
-                                InputIterator last,
-                                OutputIterator result,
-                                AssociativeOperator binary_op);
+__host__ __device__
+OutputIterator inclusive_scan(execution_policy<DerivedPolicy> &exec,
+                              InputIterator first,
+                              InputIterator last,
+                              OutputIterator result,
+                              AssociativeOperator binary_op);
 
-template<typename System,
+
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename T,
          typename AssociativeOperator>
-  OutputIterator exclusive_scan(dispatchable<System> &system,
-                                InputIterator first,
-                                InputIterator last,
-                                OutputIterator result,
-                                T init,
-                                AssociativeOperator binary_op);
+__host__ __device__
+OutputIterator exclusive_scan(execution_policy<DerivedPolicy> &exec,
+                              InputIterator first,
+                              InputIterator last,
+                              OutputIterator result,
+                              T init,
+                              AssociativeOperator binary_op);
+
 
 } // end namespace detail
 } // end namespace cuda

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -92,6 +92,7 @@ template<typename Allocator>
 {
   Allocator &a;
 
+  __host__ __device__
   destroy_via_allocator(Allocator &a)
     : a(a)
   {}
@@ -107,6 +108,7 @@ template<typename Allocator>
 
 // destroy_range case 1: destroy via allocator
 template<typename Allocator, typename Pointer, typename Size>
+__host__ __device__
   typename enable_if_destroy_range_case1<Allocator,Pointer>::type
     destroy_range(Allocator &a, Pointer p, Size n)
 {
@@ -117,6 +119,7 @@ template<typename Allocator, typename Pointer, typename Size>
 // we must prepare for His coming
 struct gozer
 {
+  __thrust_exec_check_disable__
   template<typename T>
   inline __host__ __device__
   void operator()(T &x)
@@ -127,6 +130,7 @@ struct gozer
 
 // destroy_range case 2: destroy without the allocator
 template<typename Allocator, typename Pointer, typename Size>
+__host__ __device__
   typename enable_if_destroy_range_case2<Allocator,Pointer>::type
     destroy_range(Allocator &a, Pointer p, Size n)
 {
@@ -136,6 +140,7 @@ template<typename Allocator, typename Pointer, typename Size>
 
 // destroy_range case 3: no-op
 template<typename Allocator, typename Pointer, typename Size>
+__host__ __device__
   typename enable_if_destroy_range_case3<Allocator,Pointer>::type
     destroy_range(Allocator &, Pointer, Size)
 {
@@ -147,6 +152,7 @@ template<typename Allocator, typename Pointer, typename Size>
 
 
 template<typename Allocator, typename Pointer, typename Size>
+__host__ __device__
   void destroy_range(Allocator &a, Pointer p, Size n)
 {
   return allocator_traits_detail::destroy_range(a,p,n);

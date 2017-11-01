@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -810,6 +810,7 @@ inline bool eq(const T1& lhs, const T2& rhs) {
          eq(lhs.get_tail(), rhs.get_tail());
 }
 template<>
+__host__ __device__
 inline bool eq<null_type,null_type>(const null_type&, const null_type&) { return true; }
 
 template<class T1, class T2>

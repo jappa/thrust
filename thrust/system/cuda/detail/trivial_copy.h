@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cuda/detail/tag.h>
+#include <thrust/system/cuda/detail/execution_policy.h>
 
 namespace thrust
 {
@@ -26,24 +26,28 @@ namespace cuda
 namespace detail
 {
 
-template<typename System,
+
+template<typename DerivedPolicy,
          typename RandomAccessIterator1,
          typename Size,
          typename RandomAccessIterator2>
-  void trivial_copy_n(dispatchable<System> &system,
-                      RandomAccessIterator1 first,
-                      Size n,
-                      RandomAccessIterator2 result);
+__host__ __device__
+void trivial_copy_n(execution_policy<DerivedPolicy> &exec,
+                    RandomAccessIterator1 first,
+                    Size n,
+                    RandomAccessIterator2 result);
+
 
 template<typename System1,
          typename System2,
          typename RandomAccessIterator1,
          typename Size,
          typename RandomAccessIterator2>
-  void trivial_copy_n(cross_system<System1,System2> &systems,
-                      RandomAccessIterator1 first,
-                      Size n,
-                      RandomAccessIterator2 result);
+void trivial_copy_n(cross_system<System1,System2> &exec,
+                    RandomAccessIterator1 first,
+                    Size n,
+                    RandomAccessIterator2 result);
+
 
 } // end detail
 } // end cuda

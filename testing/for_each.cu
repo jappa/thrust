@@ -2,7 +2,8 @@
 #include <thrust/for_each.h>
 #include <thrust/device_ptr.h>
 #include <thrust/iterator/counting_iterator.h>
-
+#include <thrust/iterator/retag.h>
+#include <algorithm>
 
 __THRUST_DISABLE_MSVC_POSSIBLE_LOSS_OF_DATA_WARNING_BEGIN
 

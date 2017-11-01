@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/get_iterator_value.h>
 #include <thrust/extrema.h>
 #include <thrust/functional.h>
 #include <thrust/pair.h>
@@ -43,9 +44,11 @@ namespace generic
 namespace detail
 {
 
+
 //////////////
 // Functors //
 //////////////
+//
 
 // return the smaller/larger element making sure to prefer the 
 // first occurance of the minimum/maximum element
@@ -73,7 +76,6 @@ struct min_element_reduction
     else
       return rhs;
   } // end operator()()
-
 }; // end min_element_reduction
 
 
@@ -101,8 +103,8 @@ struct max_element_reduction
     else
       return rhs;
   } // end operator()()
-
 }; // end max_element_reduction
+
 
 // return the smaller & larger element making sure to prefer the 
 // first occurance of the minimum/maximum element
@@ -111,6 +113,7 @@ struct minmax_element_reduction
 {
   BinaryPredicate comp;
 
+  __host__ __device__
   minmax_element_reduction(BinaryPredicate comp) : comp(comp){}
 
   __host__ __device__ 
@@ -124,6 +127,7 @@ struct minmax_element_reduction
   } // end operator()()
 }; // end minmax_element_reduction
 
+
 template <typename InputType, typename IndexType>
 struct duplicate_tuple
 {
@@ -135,20 +139,25 @@ struct duplicate_tuple
   }
 }; // end duplicate_tuple
 
+
 } // end namespace detail
 
-template <typename System, typename ForwardIterator>
-ForwardIterator min_element(thrust::dispatchable<System> &system,
+
+template <typename DerivedPolicy, typename ForwardIterator>
+__host__ __device__
+ForwardIterator min_element(thrust::execution_policy<DerivedPolicy> &exec,
                             ForwardIterator first,
                             ForwardIterator last)
 {
   typedef typename thrust::iterator_value<ForwardIterator>::type value_type;
 
-  return thrust::min_element(system, first, last, thrust::less<value_type>());
+  return thrust::min_element(exec, first, last, thrust::less<value_type>());
 } // end min_element()
 
-template <typename System, typename ForwardIterator, typename BinaryPredicate>
-ForwardIterator min_element(thrust::dispatchable<System> &system,
+
+template <typename DerivedPolicy, typename ForwardIterator, typename BinaryPredicate>
+__host__ __device__
+ForwardIterator min_element(thrust::execution_policy<DerivedPolicy> &exec,
                             ForwardIterator first,
                             ForwardIterator last,
                             BinaryPredicate comp)
@@ -161,27 +170,31 @@ ForwardIterator min_element(thrust::dispatchable<System> &system,
 
   thrust::tuple<InputType, IndexType> result =
     thrust::reduce
-      (system,
+      (exec,
        thrust::make_zip_iterator(thrust::make_tuple(first, thrust::counting_iterator<IndexType>(0))),
        thrust::make_zip_iterator(thrust::make_tuple(first, thrust::counting_iterator<IndexType>(0))) + (last - first),
-       thrust::tuple<InputType, IndexType>(*first, 0),
+       thrust::tuple<InputType, IndexType>(thrust::detail::get_iterator_value(derived_cast(exec), first), 0),
        detail::min_element_reduction<InputType, IndexType, BinaryPredicate>(comp));
 
   return first + thrust::get<1>(result);
 } // end min_element()
 
-template <typename System, typename ForwardIterator>
-ForwardIterator max_element(thrust::dispatchable<System> &system,
+
+template <typename DerivedPolicy, typename ForwardIterator>
+__host__ __device__
+ForwardIterator max_element(thrust::execution_policy<DerivedPolicy> &exec,
                             ForwardIterator first,
                             ForwardIterator last)
 {
   typedef typename thrust::iterator_value<ForwardIterator>::type value_type;
 
-  return thrust::max_element(system, first, last, thrust::less<value_type>());
+  return thrust::max_element(exec, first, last, thrust::less<value_type>());
 } // end max_element()
 
-template <typename System, typename ForwardIterator, typename BinaryPredicate>
-ForwardIterator max_element(thrust::dispatchable<System> &system,
+
+template <typename DerivedPolicy, typename ForwardIterator, typename BinaryPredicate>
+__host__ __device__
+ForwardIterator max_element(thrust::execution_policy<DerivedPolicy> &exec,
                             ForwardIterator first,
                             ForwardIterator last,
                             BinaryPredicate comp)
@@ -194,27 +207,31 @@ ForwardIterator max_element(thrust::dispatchable<System> &system,
 
   thrust::tuple<InputType, IndexType> result =
     thrust::reduce
-      (system,
+      (exec,
        thrust::make_zip_iterator(thrust::make_tuple(first, thrust::counting_iterator<IndexType>(0))),
        thrust::make_zip_iterator(thrust::make_tuple(first, thrust::counting_iterator<IndexType>(0))) + (last - first),
-       thrust::tuple<InputType, IndexType>(*first, 0),
+       thrust::tuple<InputType, IndexType>(thrust::detail::get_iterator_value(derived_cast(exec),first), 0),
        detail::max_element_reduction<InputType, IndexType, BinaryPredicate>(comp));
 
   return first + thrust::get<1>(result);
 } // end max_element()
 
-template <typename System, typename ForwardIterator>
-thrust::pair<ForwardIterator,ForwardIterator> minmax_element(thrust::dispatchable<System> &system,
+
+template <typename DerivedPolicy, typename ForwardIterator>
+__host__ __device__
+thrust::pair<ForwardIterator,ForwardIterator> minmax_element(thrust::execution_policy<DerivedPolicy> &exec,
                                                              ForwardIterator first, 
                                                              ForwardIterator last)
 {
   typedef typename thrust::iterator_value<ForwardIterator>::type value_type;
 
-  return thrust::minmax_element(system, first, last, thrust::less<value_type>());
+  return thrust::minmax_element(exec, first, last, thrust::less<value_type>());
 } // end minmax_element()
 
-template <typename System, typename ForwardIterator, typename BinaryPredicate>
-thrust::pair<ForwardIterator,ForwardIterator> minmax_element(thrust::dispatchable<System> &system,
+
+template <typename DerivedPolicy, typename ForwardIterator, typename BinaryPredicate>
+__host__ __device__
+thrust::pair<ForwardIterator,ForwardIterator> minmax_element(thrust::execution_policy<DerivedPolicy> &exec,
                                                              ForwardIterator first, 
                                                              ForwardIterator last,
                                                              BinaryPredicate comp)
@@ -227,15 +244,17 @@ thrust::pair<ForwardIterator,ForwardIterator> minmax_element(thrust::dispatchabl
 
   thrust::tuple< thrust::tuple<InputType,IndexType>, thrust::tuple<InputType,IndexType> > result = 
     thrust::transform_reduce
-      (system,
+      (exec,
        thrust::make_zip_iterator(thrust::make_tuple(first, thrust::counting_iterator<IndexType>(0))),
        thrust::make_zip_iterator(thrust::make_tuple(first, thrust::counting_iterator<IndexType>(0))) + (last - first),
        detail::duplicate_tuple<InputType, IndexType>(),
-       detail::duplicate_tuple<InputType, IndexType>()(thrust::tuple<InputType, IndexType>(*first, 0)),
+       detail::duplicate_tuple<InputType, IndexType>()(
+         thrust::tuple<InputType, IndexType>(thrust::detail::get_iterator_value(derived_cast(exec),first), 0)),
        detail::minmax_element_reduction<InputType, IndexType, BinaryPredicate>(comp));
 
   return thrust::make_pair(first + thrust::get<1>(thrust::get<0>(result)), first + thrust::get<1>(thrust::get<1>(result)));
 } // end minmax_element()
+
 
 } // end namespace generic
 } // end namespace detail

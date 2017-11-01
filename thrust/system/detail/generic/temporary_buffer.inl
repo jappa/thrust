@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,11 +30,12 @@ namespace generic
 {
 
 
-template<typename T, typename System>
-  thrust::pair<thrust::pointer<T,System>, typename thrust::pointer<T,System>::difference_type>
-    get_temporary_buffer(thrust::dispatchable<System> &s, typename thrust::pointer<T,System>::difference_type n)
+template<typename T, typename DerivedPolicy>
+__host__ __device__
+  thrust::pair<thrust::pointer<T,DerivedPolicy>, typename thrust::pointer<T,DerivedPolicy>::difference_type>
+    get_temporary_buffer(thrust::execution_policy<DerivedPolicy> &exec, typename thrust::pointer<T,DerivedPolicy>::difference_type n)
 {
-  thrust::pointer<T,System> ptr = thrust::malloc<T>(s, n);
+  thrust::pointer<T,DerivedPolicy> ptr = thrust::malloc<T>(exec, n);
 
   // check for a failed malloc
   if(!ptr.get())
@@ -46,10 +47,11 @@ template<typename T, typename System>
 } // end get_temporary_buffer()
 
 
-template<typename System, typename Pointer>
-  void return_temporary_buffer(thrust::dispatchable<System> &s, Pointer p)
+template<typename DerivedPolicy, typename Pointer>
+__host__ __device__
+  void return_temporary_buffer(thrust::execution_policy<DerivedPolicy> &exec, Pointer p)
 {
-  thrust::free(s, p);
+  thrust::free(exec, p);
 } // end return_temporary_buffer()
 
 

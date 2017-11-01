@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,25 +29,29 @@ namespace thrust
 {
 
 
-template<typename System, typename ForwardIterator, typename T>
-  void uninitialized_fill(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename ForwardIterator, typename T>
+__host__ __device__
+  void uninitialized_fill(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                           ForwardIterator first,
                           ForwardIterator last,
                           const T &x)
 {
   using thrust::system::detail::generic::uninitialized_fill;
-  return uninitialized_fill(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, x);
+  return uninitialized_fill(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, x);
 } // end uninitialized_fill()
 
 
-template<typename System, typename ForwardIterator, typename Size, typename T>
-  ForwardIterator uninitialized_fill_n(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename ForwardIterator, typename Size, typename T>
+__host__ __device__
+  ForwardIterator uninitialized_fill_n(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                        ForwardIterator first,
                                        Size n,
                                        const T &x)
 {
   using thrust::system::detail::generic::uninitialized_fill_n;
-  return uninitialized_fill_n(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, n, x);
+  return uninitialized_fill_n(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, n, x);
 } // end uninitialized_fill_n()
 
 

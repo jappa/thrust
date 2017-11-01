@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -34,38 +34,51 @@ namespace detail
 namespace generic
 {
 
-template <typename System, typename ForwardIterator>
-ForwardIterator max_element(thrust::dispatchable<System> &system,
+
+template <typename DerivedPolicy, typename ForwardIterator>
+__host__ __device__
+ForwardIterator max_element(thrust::execution_policy<DerivedPolicy> &exec,
                             ForwardIterator first,
                             ForwardIterator last);
 
-template <typename System, typename ForwardIterator, typename BinaryPredicate>
-ForwardIterator max_element(thrust::dispatchable<System> &system,
+
+template <typename DerivedPolicy, typename ForwardIterator, typename BinaryPredicate>
+__host__ __device__
+ForwardIterator max_element(thrust::execution_policy<DerivedPolicy> &exec,
                             ForwardIterator first,
                             ForwardIterator last,
                             BinaryPredicate comp);
 
-template <typename System, typename ForwardIterator>
-ForwardIterator min_element(thrust::dispatchable<System> &system,
+
+template <typename DerivedPolicy, typename ForwardIterator>
+__host__ __device__
+ForwardIterator min_element(thrust::execution_policy<DerivedPolicy> &exec,
                             ForwardIterator first,
                             ForwardIterator last);
 
-template <typename System, typename ForwardIterator, typename BinaryPredicate>
-ForwardIterator min_element(thrust::dispatchable<System> &system,
+
+template <typename DerivedPolicy, typename ForwardIterator, typename BinaryPredicate>
+__host__ __device__
+ForwardIterator min_element(thrust::execution_policy<DerivedPolicy> &exec,
                             ForwardIterator first,
                             ForwardIterator last,
                             BinaryPredicate comp);
 
-template <typename System, typename ForwardIterator>
-thrust::pair<ForwardIterator,ForwardIterator> minmax_element(thrust::dispatchable<System> &system,
+
+template <typename DerivedPolicy, typename ForwardIterator>
+__host__ __device__
+thrust::pair<ForwardIterator,ForwardIterator> minmax_element(thrust::execution_policy<DerivedPolicy> &exec,
                                                              ForwardIterator first, 
                                                              ForwardIterator last);
 
-template <typename System, typename ForwardIterator, typename BinaryPredicate>
-thrust::pair<ForwardIterator,ForwardIterator> minmax_element(thrust::dispatchable<System> &system,
+
+template <typename DerivedPolicy, typename ForwardIterator, typename BinaryPredicate>
+__host__ __device__
+thrust::pair<ForwardIterator,ForwardIterator> minmax_element(thrust::execution_policy<DerivedPolicy> &exec,
                                                              ForwardIterator first, 
                                                              ForwardIterator last,
                                                              BinaryPredicate comp);
+
 
 } // end namespace generic
 } // end namespace detail

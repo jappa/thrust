@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,16 +29,18 @@ namespace thrust
 {
 
 
-template<typename System,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy,
          typename ForwardIterator1,
          typename ForwardIterator2>
-  ForwardIterator2 swap_ranges(const thrust::detail::dispatchable_base<System> &system,
+__host__ __device__
+  ForwardIterator2 swap_ranges(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                ForwardIterator1 first1,
                                ForwardIterator1 last1,
                                ForwardIterator2 first2)
 {
   using thrust::system::detail::generic::swap_ranges;
-  return swap_ranges(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first1, last1, first2);
+  return swap_ranges(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first1, last1, first2);
 } // end swap_ranges()
 
 

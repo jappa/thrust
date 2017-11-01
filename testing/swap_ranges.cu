@@ -1,6 +1,7 @@
 #include <unittest/unittest.h>
 #include <thrust/swap.h>
 #include <thrust/iterator/iterator_traits.h> 
+#include <thrust/iterator/retag.h>
 #include <thrust/system/cpp/memory.h>
 
 
@@ -54,8 +55,6 @@ DECLARE_UNITTEST(TestSwapRangesDispatchImplicit);
 template <class Vector>
 void TestSwapRangesSimple(void)
 {
-    typedef typename Vector::value_type T;
-
     Vector v1(5);
     v1[0] = 0; v1[1] = 1; v1[2] = 2; v1[3] = 3; v1[4] = 4;
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,23 +29,30 @@ namespace detail
 namespace generic
 {
 
-template<typename System, typename InputIterator, typename T>
-InputIterator find(thrust::dispatchable<System> &system,
+
+template<typename DerivedPolicy, typename InputIterator, typename T>
+__host__ __device__
+InputIterator find(thrust::execution_policy<DerivedPolicy> &exec,
                    InputIterator first,
                    InputIterator last,
                    const T& value);
 
-template<typename System, typename InputIterator, typename Predicate>
-InputIterator find_if(thrust::dispatchable<System> &system,
+
+template<typename DerivedPolicy, typename InputIterator, typename Predicate>
+__host__ __device__
+InputIterator find_if(thrust::execution_policy<DerivedPolicy> &exec,
                       InputIterator first,
                       InputIterator last,
                       Predicate pred);
 
-template<typename System, typename InputIterator, typename Predicate>
-InputIterator find_if_not(thrust::dispatchable<System> &system,
+
+template<typename DerivedPolicy, typename InputIterator, typename Predicate>
+__host__ __device__
+InputIterator find_if_not(thrust::execution_policy<DerivedPolicy> &exec,
                           InputIterator first,
                           InputIterator last,
                           Predicate pred);
+
 
 } // end namespace generic
 } // end namespace detail

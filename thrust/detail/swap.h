@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 namespace thrust
 {
 
+__thrust_exec_check_disable__
 template<typename Assignable1, typename Assignable2>
 __host__ __device__
 inline void swap(Assignable1 &a, Assignable2 &b)

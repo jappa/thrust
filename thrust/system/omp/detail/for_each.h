@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/omp/detail/tag.h>
+#include <thrust/system/omp/detail/execution_policy.h>
 
 namespace thrust
 {
@@ -34,19 +34,19 @@ namespace omp
 namespace detail
 {
 
-template<typename System,
+template<typename DerivedPolicy,
          typename RandomAccessIterator,
          typename UnaryFunction>
-  RandomAccessIterator for_each(dispatchable<System> &s,
+  RandomAccessIterator for_each(execution_policy<DerivedPolicy> &exec,
                                 RandomAccessIterator first,
                                 RandomAccessIterator last,
                                 UnaryFunction f);
 
-template<typename System,
+template<typename DerivedPolicy,
          typename RandomAccessIterator,
          typename Size,
          typename UnaryFunction>
-  RandomAccessIterator for_each_n(dispatchable<System> &s,
+  RandomAccessIterator for_each_n(execution_policy<DerivedPolicy> &exec,
                                   RandomAccessIterator first,
                                   Size n,
                                   UnaryFunction f);

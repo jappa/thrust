@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,8 +19,20 @@
 #include <thrust/detail/config.h>
 
 // the purpose of this header is to #include the equal.h header
-// of the host and device systems. It should be #included in any
+// of the sequential, host, and device systems. It should be #included in any
 // code which uses adl to dispatch equal
+
+#include <thrust/system/detail/sequential/equal.h>
+
+// SCons can't see through the #defines below to figure out what this header
+// includes, so we fake it out by specifying all possible files we might end up
+// including inside an #if 0.
+#if 0
+#include <thrust/system/cpp/detail/equal.h>
+#include <thrust/system/cuda/detail/equal.h>
+#include <thrust/system/omp/detail/equal.h>
+#include <thrust/system/tbb/detail/equal.h>
+#endif
 
 #define __THRUST_HOST_SYSTEM_EQUAL_HEADER <__THRUST_HOST_SYSTEM_ROOT/detail/equal.h>
 #include __THRUST_HOST_SYSTEM_EQUAL_HEADER

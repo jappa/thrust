@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/tbb/detail/tag.h>
+#include <thrust/system/tbb/detail/execution_policy.h>
+#include <thrust/detail/seq.h>
 
 #include <tbb/parallel_for.h>
 #include <thrust/iterator/iterator_traits.h>
@@ -69,12 +70,10 @@ template<typename RandomAccessIterator1, typename RandomAccessIterator2, typenam
     RandomAccessIterator1 my_first = first + offset_to_first;
     RandomAccessIterator1 my_last  = first + offset_to_last;
 
-    thrust::cpp::tag seq;
-
     // carefully pass the init value for the interval with raw_reference_cast
     typedef typename BinaryFunction::result_type sum_type;
     result[interval_idx] =
-      thrust::reduce(seq, my_first + 1, my_last, sum_type(thrust::raw_reference_cast(*my_first)), binary_op);
+      thrust::reduce(thrust::seq, my_first + 1, my_last, sum_type(thrust::raw_reference_cast(*my_first)), binary_op);
   }
 };
 
@@ -90,8 +89,8 @@ template<typename RandomAccessIterator1, typename RandomAccessIterator2, typenam
 } // end reduce_intervals_detail
 
 
-template<typename System, typename RandomAccessIterator1, typename Size, typename RandomAccessIterator2, typename BinaryFunction>
-  void reduce_intervals(thrust::tbb::dispatchable<System> &,
+template<typename DerivedPolicy, typename RandomAccessIterator1, typename Size, typename RandomAccessIterator2, typename BinaryFunction>
+  void reduce_intervals(thrust::tbb::execution_policy<DerivedPolicy> &,
                         RandomAccessIterator1 first,
                         RandomAccessIterator1 last,
                         Size interval_size,
@@ -106,8 +105,8 @@ template<typename System, typename RandomAccessIterator1, typename Size, typenam
 }
 
 
-template<typename System, typename RandomAccessIterator1, typename Size, typename RandomAccessIterator2>
-  void reduce_intervals(thrust::tbb::dispatchable<System> &system,
+template<typename DerivedPolicy, typename RandomAccessIterator1, typename Size, typename RandomAccessIterator2>
+  void reduce_intervals(thrust::tbb::execution_policy<DerivedPolicy> &exec,
                         RandomAccessIterator1 first,
                         RandomAccessIterator1 last,
                         Size interval_size,
@@ -115,7 +114,7 @@ template<typename System, typename RandomAccessIterator1, typename Size, typenam
 {
   typedef typename thrust::iterator_value<RandomAccessIterator1>::type value_type;
 
-  return thrust::system::tbb::detail::reduce_intervals(system, first, last, interval_size, result, thrust::plus<value_type>());
+  return thrust::system::tbb::detail::reduce_intervals(exec, first, last, interval_size, result, thrust::plus<value_type>());
 }
 
 

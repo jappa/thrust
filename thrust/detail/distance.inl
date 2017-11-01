@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -28,7 +28,8 @@ namespace thrust
 
 
 template<typename InputIterator>
-  inline typename thrust::iterator_traits<InputIterator>::difference_type
+inline __host__ __device__
+  typename thrust::iterator_traits<InputIterator>::difference_type
     distance(InputIterator first, InputIterator last)
 {
   return thrust::system::detail::generic::distance(first, last);

@@ -1,6 +1,7 @@
 #include <unittest/unittest.h>
 #include <thrust/sequence.h>
 #include <thrust/iterator/discard_iterator.h>
+#include <thrust/iterator/retag.h>
 
 
 template<typename ForwardIterator>
@@ -42,8 +43,6 @@ DECLARE_UNITTEST(TestSequenceDispatchImplicit);
 template <class Vector>
 void TestSequenceSimple(void)
 {
-    typedef typename Vector::value_type T;
-    
     Vector v(5);
 
     thrust::sequence(v.begin(), v.end());

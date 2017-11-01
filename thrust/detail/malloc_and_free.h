@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/detail/dispatchable.h>
+#include <thrust/detail/execution_policy.h>
 #include <thrust/detail/pointer.h>
 #include <thrust/detail/raw_pointer_cast.h>
 #include <thrust/system/detail/generic/memory.h>
@@ -26,25 +26,29 @@
 namespace thrust
 {
 
-template<typename System>
-pointer<void,System> malloc(const thrust::detail::dispatchable_base<System> &system, std::size_t n)
+__thrust_exec_check_disable__
+template<typename DerivedPolicy>
+__host__ __device__
+pointer<void,DerivedPolicy> malloc(const thrust::detail::execution_policy_base<DerivedPolicy> &exec, std::size_t n)
 {
   using thrust::system::detail::generic::malloc;
 
   // XXX should use a hypothetical thrust::static_pointer_cast here
-  void *raw_ptr = static_cast<void*>(thrust::raw_pointer_cast(malloc(thrust::detail::derived_cast(thrust::detail::strip_const(system)), n)));
+  void *raw_ptr = static_cast<void*>(thrust::raw_pointer_cast(malloc(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), n)));
 
-  return pointer<void,System>(raw_ptr);
+  return pointer<void,DerivedPolicy>(raw_ptr);
 }
 
-template<typename T, typename System>
-pointer<T,System> malloc(const thrust::detail::dispatchable_base<System> &system, std::size_t n)
+__thrust_exec_check_disable__
+template<typename T, typename DerivedPolicy>
+__host__ __device__
+pointer<T,DerivedPolicy> malloc(const thrust::detail::execution_policy_base<DerivedPolicy> &exec, std::size_t n)
 {
   using thrust::system::detail::generic::malloc;
 
-  T *raw_ptr = static_cast<T*>(thrust::raw_pointer_cast(malloc<T>(thrust::detail::derived_cast(thrust::detail::strip_const(system)), n)));
+  T *raw_ptr = static_cast<T*>(thrust::raw_pointer_cast(malloc<T>(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), n)));
 
-  return pointer<T,System>(raw_ptr);
+  return pointer<T,DerivedPolicy>(raw_ptr);
 }
 
 
@@ -64,12 +68,14 @@ void free(int *volatile ptr)
 #endif // CUDA_VERSION
 #endif // THRUST_DEVICE_COMPILER
 
-template<typename System, typename Pointer>
-void free(const thrust::detail::dispatchable_base<System> &system, Pointer ptr)
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename Pointer>
+__host__ __device__
+void free(const thrust::detail::execution_policy_base<DerivedPolicy> &exec, Pointer ptr)
 {
   using thrust::system::detail::generic::free;
 
-  free(thrust::detail::derived_cast(thrust::detail::strip_const(system)), ptr);
+  free(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), ptr);
 }
 
 // XXX consider another form of free which does not take a system argument and

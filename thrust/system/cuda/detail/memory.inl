@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,21 +44,15 @@ namespace system
 namespace cuda
 {
 
-
-template<typename T>
-  template<typename OtherT>
-    reference<T> &
-      reference<T>
-        ::operator=(const reference<OtherT> &other)
-{
+template <typename T>
+template <typename OtherT>
+__host__ __device__ reference<T> &reference<T>::operator=(
+    const reference<OtherT> &other) {
   return super_t::operator=(other);
 } // end reference::operator=()
 
-template<typename T>
-  reference<T> &
-    reference<T>
-      ::operator=(const value_type &x)
-{
+template <typename T>
+__host__ __device__ reference<T> &reference<T>::operator=(const value_type &x) {
   return super_t::operator=(x);
 } // end reference::operator=()
 
@@ -69,6 +63,7 @@ void swap(reference<T> a, reference<T> b)
   a.swap(b);
 } // end swap()
 
+__host__ __device__
 pointer<void> malloc(std::size_t n)
 {
   tag cuda_tag;
@@ -76,12 +71,14 @@ pointer<void> malloc(std::size_t n)
 } // end malloc()
 
 template<typename T>
+__host__ __device__
 pointer<T> malloc(std::size_t n)
 {
   pointer<void> raw_ptr = thrust::system::cuda::malloc(sizeof(T) * n);
   return pointer<T>(reinterpret_cast<T*>(raw_ptr.get()));
 } // end malloc()
 
+__host__ __device__
 void free(pointer<void> ptr)
 {
   tag cuda_tag;

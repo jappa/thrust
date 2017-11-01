@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ struct body
   RandomAccessIterator first;
   OutputType sum;
   bool first_call;  // TBB can invoke operator() multiple times on the same body
-  thrust::detail::host_function<BinaryFunction,OutputType> binary_op;
+  thrust::detail::wrapped_function<BinaryFunction,OutputType> binary_op;
 
   // note: we only initalize sum with init to avoid calling OutputType's default constructor
   body(RandomAccessIterator first, OutputType init, BinaryFunction binary_op)
@@ -66,7 +66,7 @@ struct body
 
     RandomAccessIterator iter = first + r.begin();
 
-    OutputType temp = *iter;
+    OutputType temp = thrust::raw_reference_cast(*iter);
 
     ++iter;
 
@@ -96,11 +96,11 @@ struct body
 } // end reduce_detail
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator, 
          typename OutputType,
          typename BinaryFunction>
-  OutputType reduce(dispatchable<System> &system,
+  OutputType reduce(execution_policy<DerivedPolicy> &exec,
                     InputIterator begin,
                     InputIterator end,
                     OutputType init,

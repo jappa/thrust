@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,38 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/detail/raw_pointer_cast.h>
-#include <cstdlib> // for malloc & free
-#include <thrust/system/cpp/detail/tag.h>
 
-namespace thrust
-{
-namespace system
-{
-namespace cpp
-{
-namespace detail
-{
-
-
-// note that malloc returns a raw pointer to avoid
-// depending on the heavyweight thrust/system/cpp/memory.h header
-template<typename System>
-  void *malloc(dispatchable<System> &, std::size_t n)
-{
-  return std::malloc(n);
-} // end malloc()
-
-
-template<typename System, typename Pointer>
-  void free(dispatchable<System> &, Pointer ptr)
-{
-  std::free(thrust::raw_pointer_cast(ptr));
-} // end free()
-
-
-} // end detail
-} // end cpp
-} // end system
-} // end thrust
+// this system inherits malloc & free
+#include <thrust/system/detail/sequential/malloc_and_free.h>
 

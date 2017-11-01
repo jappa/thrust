@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ struct inclusive_body
 {
   InputIterator input;
   OutputIterator output;
-  thrust::detail::host_function<BinaryFunction,ValueType> binary_op;
+  thrust::detail::wrapped_function<BinaryFunction,ValueType> binary_op;
   ValueType sum;
   bool first_call;
 
@@ -122,7 +122,7 @@ struct exclusive_body
 {
   InputIterator input;
   OutputIterator output;
-  thrust::detail::host_function<BinaryFunction,ValueType> binary_op;
+  thrust::detail::wrapped_function<BinaryFunction,ValueType> binary_op;
   ValueType sum;
   bool first_call;
 
@@ -204,7 +204,7 @@ template<typename InputIterator,
   //   TemporaryType = OutputIterator::value_type
   //
   // XXX upon c++0x, TemporaryType needs to be:
-  // result_of<BinaryFunction>::type
+  // result_of_adaptable_function<BinaryFunction>::type
   
   using namespace thrust::detail;
 
@@ -256,7 +256,7 @@ template<typename InputIterator,
   //   TemporaryType = OutputIterator::value_type
   //
   // XXX upon c++0x, TemporaryType needs to be:
-  // result_of<BinaryFunction>::type
+  // result_of_adaptable_function<BinaryFunction>::type
 
   using namespace thrust::detail;
 

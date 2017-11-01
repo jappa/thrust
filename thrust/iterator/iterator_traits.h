@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 
-/*! \file iterator_traits.h
+/*! \file thrust/iterator/iterator_traits.h
  *  \brief Traits and metafunctions for reasoning about the traits of iterators
  */
 
@@ -41,10 +41,34 @@ namespace thrust
  */
 template<typename T>
   struct iterator_traits
-    : public std::iterator_traits<T>
 {
-}; // end iterator_traits
+  typedef typename T::difference_type difference_type;
+  typedef typename T::value_type value_type;
+  typedef typename T::pointer pointer;
+  typedef typename T::reference reference;
+  typedef typename T::iterator_category iterator_category;
+};
 
+// traits are specialized for pointer types
+template<typename T>
+  struct iterator_traits<T*>
+{
+  typedef std::ptrdiff_t difference_type;
+  typedef T value_type;
+  typedef T* pointer;
+  typedef T& reference;
+  typedef std::random_access_iterator_tag iterator_category;
+};
+
+template<typename T>
+  struct iterator_traits<const T*>
+{
+  typedef std::ptrdiff_t difference_type;
+  typedef T value_type;
+  typedef const T* pointer;
+  typedef const T& reference;
+  typedef std::random_access_iterator_tag iterator_category;
+}; // end iterator_traits
 
 template<typename Iterator> struct iterator_value;
 

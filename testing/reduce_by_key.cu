@@ -2,6 +2,7 @@
 #include <thrust/reduce.h>
 #include <thrust/unique.h>
 #include <thrust/iterator/discard_iterator.h>
+#include <thrust/iterator/retag.h>
 
 template<typename T>
 struct is_equal_div_10_reduce
@@ -170,14 +171,6 @@ struct TestReduceByKeyToDiscardIterator
         thrust::host_vector<V>   h_vals_output(n);
         thrust::device_vector<K> d_keys_output(n);
         thrust::device_vector<V> d_vals_output(n);
-
-        typedef typename thrust::host_vector<K>::iterator   HostKeyIterator;
-        typedef typename thrust::host_vector<V>::iterator   HostValIterator;
-        typedef typename thrust::device_vector<K>::iterator DeviceKeyIterator;
-        typedef typename thrust::device_vector<V>::iterator DeviceValIterator;
-
-        typedef typename thrust::pair<HostKeyIterator,  HostValIterator>   HostIteratorPair;
-        typedef typename thrust::pair<DeviceKeyIterator,DeviceValIterator> DeviceIteratorPair;
 
         thrust::host_vector<K> unique_keys = h_keys;
         unique_keys.erase(thrust::unique(unique_keys.begin(), unique_keys.end()), unique_keys.end());

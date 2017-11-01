@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -32,22 +32,24 @@ namespace generic
 namespace detail
 {
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator,
          typename T>
-  void uninitialized_fill(thrust::dispatchable<System> &system,
+__host__ __device__
+  void uninitialized_fill(thrust::execution_policy<DerivedPolicy> &exec,
                           ForwardIterator first,
                           ForwardIterator last,
                           const T &x,
                           thrust::detail::true_type) // has_trivial_copy_constructor
 {
-  thrust::fill(system, first, last, x);
+  thrust::fill(exec, first, last, x);
 } // end uninitialized_fill()
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator,
          typename T>
-  void uninitialized_fill(thrust::dispatchable<System> &system,
+__host__ __device__
+  void uninitialized_fill(thrust::execution_policy<DerivedPolicy> &exec,
                           ForwardIterator first,
                           ForwardIterator last,
                           const T &x,
@@ -55,27 +57,29 @@ template<typename System,
 {
   typedef typename iterator_traits<ForwardIterator>::value_type ValueType;
 
-  thrust::for_each(system, first, last, thrust::detail::uninitialized_fill_functor<ValueType>(x));
+  thrust::for_each(exec, first, last, thrust::detail::uninitialized_fill_functor<ValueType>(x));
 } // end uninitialized_fill()
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator,
          typename Size,
          typename T>
-  ForwardIterator uninitialized_fill_n(thrust::dispatchable<System> &system,
+__host__ __device__
+  ForwardIterator uninitialized_fill_n(thrust::execution_policy<DerivedPolicy> &exec,
                                        ForwardIterator first,
                                        Size n,
                                        const T &x,
                                        thrust::detail::true_type) // has_trivial_copy_constructor
 {
-  return thrust::fill_n(system, first, n, x);
+  return thrust::fill_n(exec, first, n, x);
 } // end uninitialized_fill()
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator,
          typename Size,
          typename T>
-  ForwardIterator uninitialized_fill_n(thrust::dispatchable<System> &system,
+__host__ __device__
+  ForwardIterator uninitialized_fill_n(thrust::execution_policy<DerivedPolicy> &exec,
                                        ForwardIterator first,
                                        Size n,
                                        const T &x,
@@ -83,15 +87,16 @@ template<typename System,
 {
   typedef typename iterator_traits<ForwardIterator>::value_type ValueType;
 
-  return thrust::for_each_n(system, first, n, thrust::detail::uninitialized_fill_functor<ValueType>(x));
+  return thrust::for_each_n(exec, first, n, thrust::detail::uninitialized_fill_functor<ValueType>(x));
 } // end uninitialized_fill()
 
 } // end detail
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator,
          typename T>
-  void uninitialized_fill(thrust::dispatchable<System> &system,
+__host__ __device__
+  void uninitialized_fill(thrust::execution_policy<DerivedPolicy> &exec,
                           ForwardIterator first,
                           ForwardIterator last,
                           const T &x)
@@ -100,15 +105,16 @@ template<typename System,
 
   typedef thrust::detail::has_trivial_copy_constructor<ValueType> ValueTypeHasTrivialCopyConstructor;
 
-  thrust::system::detail::generic::detail::uninitialized_fill(system, first, last, x,
+  thrust::system::detail::generic::detail::uninitialized_fill(exec, first, last, x,
     ValueTypeHasTrivialCopyConstructor());
 } // end uninitialized_fill()
 
-template<typename System,
+template<typename DerivedPolicy,
          typename ForwardIterator,
          typename Size,
          typename T>
-  ForwardIterator uninitialized_fill_n(thrust::dispatchable<System> &system,
+__host__ __device__
+  ForwardIterator uninitialized_fill_n(thrust::execution_policy<DerivedPolicy> &exec,
                                        ForwardIterator first,
                                        Size n,
                                        const T &x)
@@ -117,7 +123,7 @@ template<typename System,
 
   typedef thrust::detail::has_trivial_copy_constructor<ValueType> ValueTypeHasTrivialCopyConstructor;
 
-  return thrust::system::detail::generic::detail::uninitialized_fill_n(system, first, n, x,
+  return thrust::system::detail::generic::detail::uninitialized_fill_n(exec, first, n, x,
     ValueTypeHasTrivialCopyConstructor());
 } // end uninitialized_fill()
 

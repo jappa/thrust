@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,53 +30,56 @@ namespace generic
 {
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator>
-  OutputIterator set_difference(thrust::dispatchable<System> &system,
-                                InputIterator1                first1,
-                                InputIterator1                last1,
-                                InputIterator2                first2,
-                                InputIterator2                last2,
-                                OutputIterator                result);
+__host__ __device__
+OutputIterator set_difference(thrust::execution_policy<ExecutionPolicy> &exec,
+                              InputIterator1                             first1,
+                              InputIterator1                             last1,
+                              InputIterator2                             first2,
+                              InputIterator2                             last2,
+                              OutputIterator                             result);
 
 
 // XXX it is an error to call this function; it has no implementation
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename StrictWeakOrdering>
-  OutputIterator set_difference(thrust::dispatchable<System> &system,
-                                InputIterator1                first1,
-                                InputIterator1                last1,
-                                InputIterator2                first2,
-                                InputIterator2                last2,
-                                OutputIterator                result,
-                                StrictWeakOrdering            comp);
+__host__ __device__
+OutputIterator set_difference(thrust::execution_policy<ExecutionPolicy> &exec,
+                              InputIterator1                             first1,
+                              InputIterator1                             last1,
+                              InputIterator2                             first2,
+                              InputIterator2                             last2,
+                              OutputIterator                             result,
+                              StrictWeakOrdering                         comp);
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename InputIterator3,
          typename InputIterator4,
          typename OutputIterator1,
          typename OutputIterator2>
-  thrust::pair<OutputIterator1,OutputIterator2>
-    set_difference_by_key(thrust::dispatchable<System> &system,
-                          InputIterator1                keys_first1,
-                          InputIterator1                keys_last1,
-                          InputIterator2                keys_first2,
-                          InputIterator2                keys_last2,
-                          InputIterator3                values_first1,
-                          InputIterator4                values_first2,
-                          OutputIterator1               keys_result,
-                          OutputIterator2               values_result);
+__host__ __device__
+thrust::pair<OutputIterator1,OutputIterator2>
+  set_difference_by_key(thrust::execution_policy<ExecutionPolicy> &exec,
+                        InputIterator1                             keys_first1,
+                        InputIterator1                             keys_last1,
+                        InputIterator2                             keys_first2,
+                        InputIterator2                             keys_last2,
+                        InputIterator3                             values_first1,
+                        InputIterator4                             values_first2,
+                        OutputIterator1                            keys_result,
+                        OutputIterator2                            values_result);
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename InputIterator3,
@@ -84,196 +87,137 @@ template<typename System,
          typename OutputIterator1,
          typename OutputIterator2,
          typename StrictWeakOrdering>
-  thrust::pair<OutputIterator1,OutputIterator2>
-    set_difference_by_key(thrust::dispatchable<System> &system,
-                          InputIterator1                keys_first1,
-                          InputIterator1                keys_last1,
-                          InputIterator2                keys_first2,
-                          InputIterator2                keys_last2,
-                          InputIterator3                values_first1,
-                          InputIterator4                values_first2,
-                          OutputIterator1               keys_result,
-                          OutputIterator2               values_result,
-                          StrictWeakOrdering            comp);
+__host__ __device__
+thrust::pair<OutputIterator1,OutputIterator2>
+  set_difference_by_key(thrust::execution_policy<ExecutionPolicy> &exec,
+                        InputIterator1                             keys_first1,
+                        InputIterator1                             keys_last1,
+                        InputIterator2                             keys_first2,
+                        InputIterator2                             keys_last2,
+                        InputIterator3                             values_first1,
+                        InputIterator4                             values_first2,
+                        OutputIterator1                            keys_result,
+                        OutputIterator2                            values_result,
+                        StrictWeakOrdering                         comp);
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator>
-  OutputIterator set_intersection(thrust::dispatchable<System> &system,
-                                  InputIterator1                first1,
-                                  InputIterator1                last1,
-                                  InputIterator2                first2,
-                                  InputIterator2                last2,
-                                  OutputIterator                result);
+__host__ __device__
+OutputIterator set_intersection(thrust::execution_policy<ExecutionPolicy> &system,
+                                InputIterator1                             first1,
+                                InputIterator1                             last1,
+                                InputIterator2                             first2,
+                                InputIterator2                             last2,
+                                OutputIterator                             result);
 
 
 // XXX it is an error to call this function; it has no implementation
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename StrictWeakOrdering>
-  OutputIterator set_intersection(thrust::dispatchable<StrictWeakOrdering> &system,
-                                  InputIterator1                            first1,
-                                  InputIterator1                            last1,
-                                  InputIterator2                            first2,
-                                  InputIterator2                            last2,
-                                  OutputIterator                            result,
-                                  StrictWeakOrdering                        comp);
+__host__ __device__
+OutputIterator set_intersection(thrust::execution_policy<StrictWeakOrdering> &system,
+                                InputIterator1                                first1,
+                                InputIterator1                                last1,
+                                InputIterator2                                first2,
+                                InputIterator2                                last2,
+                                OutputIterator                                result,
+                                StrictWeakOrdering                            comp);
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename InputIterator3,
          typename OutputIterator1,
          typename OutputIterator2>
-  thrust::pair<OutputIterator1,OutputIterator2>
-    set_intersection_by_key(thrust::dispatchable<System> &system,
-                            InputIterator1                keys_first1,
-                            InputIterator1                keys_last1,
-                            InputIterator2                keys_first2,
-                            InputIterator2                keys_last2,
-                            InputIterator3                values_first1,
-                            OutputIterator1               keys_result,
-                            OutputIterator2               values_result);
+__host__ __device__
+thrust::pair<OutputIterator1,OutputIterator2>
+  set_intersection_by_key(thrust::execution_policy<ExecutionPolicy> &system,
+                          InputIterator1                             keys_first1,
+                          InputIterator1                             keys_last1,
+                          InputIterator2                             keys_first2,
+                          InputIterator2                             keys_last2,
+                          InputIterator3                             values_first1,
+                          OutputIterator1                            keys_result,
+                          OutputIterator2                            values_result);
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename InputIterator3,
          typename OutputIterator1,
          typename OutputIterator2,
          typename StrictWeakOrdering>
-  thrust::pair<OutputIterator1,OutputIterator2>
-    set_intersection_by_key(thrust::dispatchable<System> &system,
-                            InputIterator1                keys_first1,
-                            InputIterator1                keys_last1,
-                            InputIterator2                keys_first2,
-                            InputIterator2                keys_last2,
-                            InputIterator3                values_first1,
-                            OutputIterator1               keys_result,
-                            OutputIterator2               values_result,
-                            StrictWeakOrdering            comp);
+__host__ __device__
+thrust::pair<OutputIterator1,OutputIterator2>
+  set_intersection_by_key(thrust::execution_policy<ExecutionPolicy> &system,
+                          InputIterator1                             keys_first1,
+                          InputIterator1                             keys_last1,
+                          InputIterator2                             keys_first2,
+                          InputIterator2                             keys_last2,
+                          InputIterator3                             values_first1,
+                          OutputIterator1                            keys_result,
+                          OutputIterator2                            values_result,
+                          StrictWeakOrdering                         comp);
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator>
-  OutputIterator set_symmetric_difference(thrust::dispatchable<System> &system,
-                                          InputIterator1                first1,
-                                          InputIterator1                last1,
-                                          InputIterator2                first2,
-                                          InputIterator2                last2,
-                                          OutputIterator                result);
+__host__ __device__
+OutputIterator set_symmetric_difference(thrust::execution_policy<ExecutionPolicy> &system,
+                                        InputIterator1                             first1,
+                                        InputIterator1                             last1,
+                                        InputIterator2                             first2,
+                                        InputIterator2                             last2,
+                                        OutputIterator                             result);
 
 
 // XXX it is an error to call this function; it has no implementation
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename OutputIterator,
          typename StrictWeakOrdering>
-  OutputIterator set_symmetric_difference(thrust::dispatchable<System> &system,
-                                          InputIterator1                first1,
-                                          InputIterator1                last1,
-                                          InputIterator2                first2,
-                                          InputIterator2                last2,
-                                          OutputIterator                result,
-                                          StrictWeakOrdering            comp);
+__host__ __device__
+OutputIterator set_symmetric_difference(thrust::execution_policy<ExecutionPolicy> &system,
+                                        InputIterator1                             first1,
+                                        InputIterator1                             last1,
+                                        InputIterator2                             first2,
+                                        InputIterator2                             last2,
+                                        OutputIterator                             result,
+                                        StrictWeakOrdering                         comp);
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename InputIterator3,
          typename InputIterator4,
          typename OutputIterator1,
          typename OutputIterator2>
-  thrust::pair<OutputIterator1,OutputIterator2>
-    set_symmetric_difference_by_key(thrust::dispatchable<System> &system,
-                                    InputIterator1                keys_first1,
-                                    InputIterator1                keys_last1,
-                                    InputIterator2                keys_first2,
-                                    InputIterator2                keys_last2,
-                                    InputIterator3                values_first1,
-                                    InputIterator4                values_first2,
-                                    OutputIterator1               keys_result,
-                                    OutputIterator2               values_result);
+__host__ __device__
+thrust::pair<OutputIterator1,OutputIterator2>
+  set_symmetric_difference_by_key(thrust::execution_policy<ExecutionPolicy> &system,
+                                  InputIterator1                             keys_first1,
+                                  InputIterator1                             keys_last1,
+                                  InputIterator2                             keys_first2,
+                                  InputIterator2                             keys_last2,
+                                  InputIterator3                             values_first1,
+                                  InputIterator4                             values_first2,
+                                  OutputIterator1                            keys_result,
+                                  OutputIterator2                            values_result);
 
 
-template<typename System,
-         typename InputIterator1,
-         typename InputIterator2,
-         typename InputIterator3,
-         typename InputIterator4,
-         typename OutputIterator1,
-         typename OutputIterator2,
-         typename StrictWeakOrdering>
-  thrust::pair<OutputIterator1,OutputIterator2>
-    set_symmetric_difference_by_key(thrust::dispatchable<System> &system,
-                                    InputIterator1                keys_first1,
-                                    InputIterator1                keys_last1,
-                                    InputIterator2                keys_first2,
-                                    InputIterator2                keys_last2,
-                                    InputIterator3                values_first1,
-                                    InputIterator4                values_first2,
-                                    OutputIterator1               keys_result,
-                                    OutputIterator2               values_result,
-                                    StrictWeakOrdering            comp);
-
-
-template<typename System,
-         typename InputIterator1,
-         typename InputIterator2,
-         typename OutputIterator>
-  OutputIterator set_union(thrust::dispatchable<System> &system,
-                           InputIterator1                first1,
-                           InputIterator1                last1,
-                           InputIterator2                first2,
-                           InputIterator2                last2,
-                           OutputIterator                result);
-
-
-// XXX it is an error to call this function; it has no implementation
-template<typename System,
-         typename InputIterator1,
-         typename InputIterator2,
-         typename OutputIterator,
-         typename StrictWeakOrdering>
-  OutputIterator set_union(thrust::dispatchable<System> &system,
-                           InputIterator1                first1,
-                           InputIterator1                last1,
-                           InputIterator2                first2,
-                           InputIterator2                last2,
-                           OutputIterator                result,
-                           StrictWeakOrdering            comp);
-
-
-template<typename System,
-         typename InputIterator1,
-         typename InputIterator2,
-         typename InputIterator3,
-         typename InputIterator4,
-         typename OutputIterator1,
-         typename OutputIterator2>
-  thrust::pair<OutputIterator1,OutputIterator2>
-    set_union_by_key(thrust::dispatchable<System> &system,
-                     InputIterator1                keys_first1,
-                     InputIterator1                keys_last1,
-                     InputIterator2                keys_first2,
-                     InputIterator2                keys_last2,
-                     InputIterator3                values_first1,
-                     InputIterator4                values_first2,
-                     OutputIterator1               keys_result,
-                     OutputIterator2               values_result);
-
-
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator1,
          typename InputIterator2,
          typename InputIterator3,
@@ -281,17 +225,89 @@ template<typename System,
          typename OutputIterator1,
          typename OutputIterator2,
          typename StrictWeakOrdering>
-  thrust::pair<OutputIterator1,OutputIterator2>
-    set_union_by_key(thrust::dispatchable<System> &system,
-                     InputIterator1                keys_first1,
-                     InputIterator1                keys_last1,
-                     InputIterator2                keys_first2,
-                     InputIterator2                keys_last2,
-                     InputIterator3                values_first1,
-                     InputIterator4                values_first2,
-                     OutputIterator1               keys_result,
-                     OutputIterator2               values_result,
-                     StrictWeakOrdering            comp);
+__host__ __device__
+thrust::pair<OutputIterator1,OutputIterator2>
+  set_symmetric_difference_by_key(thrust::execution_policy<ExecutionPolicy> &system,
+                                  InputIterator1                             keys_first1,
+                                  InputIterator1                             keys_last1,
+                                  InputIterator2                             keys_first2,
+                                  InputIterator2                             keys_last2,
+                                  InputIterator3                             values_first1,
+                                  InputIterator4                             values_first2,
+                                  OutputIterator1                            keys_result,
+                                  OutputIterator2                            values_result,
+                                  StrictWeakOrdering                         comp);
+
+
+template<typename ExecutionPolicy,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator>
+__host__ __device__
+OutputIterator set_union(thrust::execution_policy<ExecutionPolicy> &system,
+                         InputIterator1                             first1,
+                         InputIterator1                             last1,
+                         InputIterator2                             first2,
+                         InputIterator2                             last2,
+                         OutputIterator                             result);
+
+
+// XXX it is an error to call this function; it has no implementation
+template<typename ExecutionPolicy,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator,
+         typename StrictWeakOrdering>
+__host__ __device__
+OutputIterator set_union(thrust::execution_policy<ExecutionPolicy> &system,
+                         InputIterator1                             first1,
+                         InputIterator1                             last1,
+                         InputIterator2                             first2,
+                         InputIterator2                             last2,
+                         OutputIterator                             result,
+                         StrictWeakOrdering                         comp);
+
+
+template<typename ExecutionPolicy,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename InputIterator3,
+         typename InputIterator4,
+         typename OutputIterator1,
+         typename OutputIterator2>
+__host__ __device__
+thrust::pair<OutputIterator1,OutputIterator2>
+  set_union_by_key(thrust::execution_policy<ExecutionPolicy> &system,
+                   InputIterator1                             keys_first1,
+                   InputIterator1                             keys_last1,
+                   InputIterator2                             keys_first2,
+                   InputIterator2                             keys_last2,
+                   InputIterator3                             values_first1,
+                   InputIterator4                             values_first2,
+                   OutputIterator1                            keys_result,
+                   OutputIterator2                            values_result);
+
+
+template<typename ExecutionPolicy,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename InputIterator3,
+         typename InputIterator4,
+         typename OutputIterator1,
+         typename OutputIterator2,
+         typename StrictWeakOrdering>
+__host__ __device__
+thrust::pair<OutputIterator1,OutputIterator2>
+  set_union_by_key(thrust::execution_policy<ExecutionPolicy> &system,
+                   InputIterator1                             keys_first1,
+                   InputIterator1                             keys_last1,
+                   InputIterator2                             keys_first2,
+                   InputIterator2                             keys_last2,
+                   InputIterator3                             values_first1,
+                   InputIterator4                             values_first2,
+                   OutputIterator1                            keys_result,
+                   OutputIterator2                            values_result,
+                   StrictWeakOrdering                         comp);
 
 
 } // end namespace generic

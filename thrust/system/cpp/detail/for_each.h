@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,44 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cpp/detail/tag.h>
-#include <thrust/system/detail/internal/scalar/for_each.h>
 
-namespace thrust
-{
-namespace system
-{
-namespace cpp
-{
-namespace detail
-{
-
-
-template<typename System,
-         typename InputIterator,
-         typename UnaryFunction>
-InputIterator for_each(thrust::system::cpp::detail::dispatchable<System> &,
-                       InputIterator first,
-                       InputIterator last,
-                       UnaryFunction f)
-{
-  return thrust::system::detail::internal::scalar::for_each(first, last, f);
-}
-
-template<typename System,
-         typename InputIterator,
-         typename Size,
-         typename UnaryFunction>
-InputIterator for_each_n(thrust::system::cpp::detail::dispatchable<System> &,
-                         InputIterator first,
-                         Size n,
-                         UnaryFunction f)
-{
-  return thrust::system::detail::internal::scalar::for_each_n(first, n, f);
-}
-
-} // end namespace detail
-} // end namespace cpp
-} // end namespace system
-} // end namespace thrust
+// this system inherits for_each
+#include <thrust/system/detail/sequential/for_each.h>
 

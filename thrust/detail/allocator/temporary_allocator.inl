@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,6 +18,11 @@
 #include <thrust/detail/allocator/temporary_allocator.h>
 #include <thrust/detail/temporary_buffer.h>
 #include <thrust/system/detail/bad_alloc.h>
+#include <cassert>
+
+#ifdef __CUDACC__
+#include <thrust/system/cuda/detail/terminate.h>
+#endif
 
 namespace thrust
 {
@@ -26,6 +31,7 @@ namespace detail
 
 
 template<typename T, typename System>
+__host__ __device__
   typename temporary_allocator<T,System>::pointer
     temporary_allocator<T,System>
       ::allocate(typename temporary_allocator<T,System>::size_type cnt)
@@ -39,7 +45,11 @@ template<typename T, typename System>
     // note that we pass cnt to deallocate, not a value derived from result.second
     deallocate(result.first, cnt);
 
+#if !defined(__CUDA_ARCH__)
     throw thrust::system::detail::bad_alloc("temporary_buffer::allocate: get_temporary_buffer failed");
+#else
+    thrust::system::cuda::detail::terminate_with_message("temporary_buffer::allocate: get_temporary_buffer failed");
+#endif
   } // end if
 
   return result.first;
@@ -47,8 +57,9 @@ template<typename T, typename System>
 
 
 template<typename T, typename System>
+__host__ __device__
   void temporary_allocator<T,System>
-    ::deallocate(typename temporary_allocator<T,System>::pointer p, typename temporary_allocator<T,System>::size_type n)
+    ::deallocate(typename temporary_allocator<T,System>::pointer p, typename temporary_allocator<T,System>::size_type)
 {
   return thrust::return_temporary_buffer(system(), p);
 } // end temporary_allocator

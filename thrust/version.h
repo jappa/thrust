@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,18 +19,25 @@
  *
  *         <thrust/version.h> is the only Thrust header that is guaranteed to
  *         change with every thrust release.
+ *
+ *         It is also the only header that does not cause THRUST_HOST_SYSTEM
+ *         and THRUST_DEVICE_SYSTEM to be defined. This way, a user may include
+ *         this header and inspect THRUST_VERSION before programatically defining
+ *         either of these macros herself.
  */
 
 #pragma once
 
-#include <thrust/detail/config.h>
-
-//  This is the only thrust header that is guaranteed to 
-//  change with every thrust release.
+//  This is the only Thrust header that is guaranteed to 
+//  change with every Thrust release.
 //
 //  THRUST_VERSION % 100 is the sub-minor version
 //  THRUST_VERSION / 100 % 1000 is the minor version
 //  THRUST_VERSION / 100000 is the major version
+//
+//  Because this header does not #include <thrust/detail/config.h>,
+//  it is the only Thrust header that does not cause
+//  THRUST_HOST_SYSTEM and THRUST_DEVICE_SYSTEM to be defined.
 
 /*! \def THRUST_VERSION
  *  \brief The preprocessor macro \p THRUST_VERSION encodes the version
@@ -40,7 +47,7 @@
  *         <tt>THRUST_VERSION / 100 % 1000</tt> is the minor version.
  *         <tt>THRUST_VERSION / 100000</tt> is the major version.
  */
-#define THRUST_VERSION 100700
+#define THRUST_VERSION 100803
 
 /*! \def THRUST_MAJOR_VERSION
  *  \brief The preprocessor macro \p THRUST_MAJOR_VERSION encodes the
@@ -59,6 +66,13 @@
  *         sub-minor version number of the Thrust library.
  */
 #define THRUST_SUBMINOR_VERSION  (THRUST_VERSION % 100)
+
+/*! \def THRUST_PATCH_NUMBER
+ *  \brief The preprocessor macro \p THRUST_PATCH_NUMBER encodes the
+ *         patch number of the Thrust library.
+ */
+#define THRUST_PATCH_NUMBER 2
+
 
 // Declare these namespaces here for the purpose of Doxygenating them
 

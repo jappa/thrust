@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -36,10 +36,11 @@ namespace generic
 {
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator,
          typename OutputIterator>
-  OutputIterator inclusive_scan(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator inclusive_scan(thrust::execution_policy<ExecutionPolicy> &exec,
                                 InputIterator first,
                                 InputIterator last,
                                 OutputIterator result)
@@ -58,14 +59,15 @@ template<typename System,
   >::type ValueType;
 
   // assume plus as the associative operator
-  return thrust::inclusive_scan(system, first, last, result, thrust::plus<ValueType>());
+  return thrust::inclusive_scan(exec, first, last, result, thrust::plus<ValueType>());
 } // end inclusive_scan()
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator,
          typename OutputIterator>
-  OutputIterator exclusive_scan(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan(thrust::execution_policy<ExecutionPolicy> &exec,
                                 InputIterator first,
                                 InputIterator last,
                                 OutputIterator result)
@@ -84,30 +86,32 @@ template<typename System,
   >::type ValueType;
 
   // assume 0 as the initialization value
-  return thrust::exclusive_scan(system, first, last, result, ValueType(0));
+  return thrust::exclusive_scan(exec, first, last, result, ValueType(0));
 } // end exclusive_scan()
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename T>
-  OutputIterator exclusive_scan(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan(thrust::execution_policy<ExecutionPolicy> &exec,
                                 InputIterator first,
                                 InputIterator last,
                                 OutputIterator result,
                                 T init)
 {
   // assume plus as the associative operator
-  return thrust::exclusive_scan(system, first, last, result, init, thrust::plus<T>());
+  return thrust::exclusive_scan(exec, first, last, result, init, thrust::plus<T>());
 } // end exclusive_scan()
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename BinaryFunction>
-  OutputIterator inclusive_scan(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator inclusive_scan(thrust::execution_policy<ExecutionPolicy> &exec,
                                 InputIterator first,
                                 InputIterator last,
                                 OutputIterator result,
@@ -119,12 +123,13 @@ template<typename System,
 } // end inclusive_scan
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename T,
          typename BinaryFunction>
-  OutputIterator exclusive_scan(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator exclusive_scan(thrust::execution_policy<ExecutionPolicy> &exec,
                                 InputIterator first,
                                 InputIterator last,
                                 OutputIterator result,

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,41 +14,9 @@
  *  limitations under the License.
  */
 
-
-/*! \file fill.h
- *  \brief Device implementation of fill.
- */
-
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cuda/detail/tag.h>
 
-namespace thrust
-{
-namespace system
-{
-namespace cuda
-{
-namespace detail
-{
-
-template<typename System, typename ForwardIterator, typename T>
-  void fill(dispatchable<System> &system,
-            ForwardIterator first,
-            ForwardIterator last,
-            const T &value);
-
-template<typename System, typename OutputIterator, typename Size, typename T>
-  OutputIterator fill_n(dispatchable<System> &system,
-                        OutputIterator first,
-                        Size n,
-                        const T &value);
-
-} // end namespace detail
-} // end namespace cuda
-} // end namespace system
-} // end namespace thrust
-
-#include <thrust/system/cuda/detail/fill.inl>
+// this system has no special version of this algorithm
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -42,6 +42,8 @@ namespace thrust
  *  \tparam InputIterator is a model of <a href="http://www.sgi.com/tech/stl/InputIterator.html">Input Iterator</a>.
  *  \tparam Distance is an integral type that is convertible to \p InputIterator's distance type. 
  *
+ *  \pre \p n shall be negative only for bidirectional and random access iterators.
+ *
  *  The following code snippet demonstrates how to use \p advance to increment
  *  an iterator a given number of times.
  *
@@ -60,6 +62,7 @@ namespace thrust
  *  \see http://www.sgi.com/tech/stl/advance.html
  */
 template <typename InputIterator, typename Distance>
+__host__ __device__
 void advance(InputIterator& i, Distance n);
 
 /*! \} // end iterators

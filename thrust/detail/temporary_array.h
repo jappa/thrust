@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 
 #include <thrust/detail/config.h>
 #include <thrust/iterator/iterator_traits.h>
-#include <thrust/iterator/retag.h>
+#include <thrust/iterator/detail/tagged_iterator.h>
 #include <thrust/detail/contiguous_storage.h>
 #include <thrust/detail/allocator/temporary_allocator.h>
 #include <thrust/detail/allocator/no_throw_allocator.h>
@@ -57,33 +57,43 @@ template<typename T, typename System>
   public:
     typedef typename super_t::size_type size_type;
 
-    temporary_array(thrust::dispatchable<System> &system, size_type n);
+    __host__ __device__
+    temporary_array(thrust::execution_policy<System> &system);
+
+    __host__ __device__
+    temporary_array(thrust::execution_policy<System> &system, size_type n);
 
     // provide a kill-switch to explicitly avoid initialization
-    temporary_array(int uninit, thrust::dispatchable<System> &system, size_type n);
+    __host__ __device__
+    temporary_array(int uninit, thrust::execution_policy<System> &system, size_type n);
 
     template<typename InputIterator>
-    temporary_array(thrust::dispatchable<System> &system,
+    __host__ __device__
+    temporary_array(thrust::execution_policy<System> &system,
                     InputIterator first,
                     size_type n);
 
     template<typename InputIterator, typename InputSystem>
-    temporary_array(thrust::dispatchable<System> &system,
-                    thrust::dispatchable<InputSystem> &input_system,
+    __host__ __device__
+    temporary_array(thrust::execution_policy<System> &system,
+                    thrust::execution_policy<InputSystem> &input_system,
                     InputIterator first,
                     size_type n);
 
     template<typename InputIterator>
-    temporary_array(thrust::dispatchable<System> &system,
+    __host__ __device__
+    temporary_array(thrust::execution_policy<System> &system,
                     InputIterator first,
                     InputIterator last);
 
     template<typename InputSystem, typename InputIterator>
-    temporary_array(thrust::dispatchable<System> &system,
-                    thrust::dispatchable<InputSystem> &input_system,
+    __host__ __device__
+    temporary_array(thrust::execution_policy<System> &system,
+                    thrust::execution_policy<InputSystem> &input_system,
                     InputIterator first,
                     InputIterator last);
 
+    __host__ __device__
     ~temporary_array();
 }; // end temporary_array
 
@@ -97,8 +107,8 @@ template<typename Iterator, typename System>
 
     template<typename Ignored1, typename Ignored2>
     tagged_iterator_range(const Ignored1 &, const Ignored2 &, Iterator first, Iterator last)
-      : m_begin(reinterpret_tag<System>(first)),
-        m_end(reinterpret_tag<System>(last))
+      : m_begin(first),
+        m_end(last)
     {}
 
     iterator begin(void) const { return m_begin; }
@@ -143,8 +153,8 @@ template<typename Iterator, typename FromSystem, typename ToSystem>
   typedef typename move_to_system_base<Iterator,FromSystem,ToSystem>::type super_t;
 
   public:
-    move_to_system(thrust::dispatchable<FromSystem> &from_system,
-                   thrust::dispatchable<ToSystem> &to_system,
+    move_to_system(thrust::execution_policy<FromSystem> &from_system,
+                   thrust::execution_policy<ToSystem> &to_system,
                    Iterator first,
                    Iterator last)
       : super_t(to_system, from_system, first, last) {}

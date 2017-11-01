@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cuda/detail/tag.h>
+#include <thrust/system/cuda/detail/execution_policy.h>
 
 namespace thrust
 {
@@ -33,14 +33,17 @@ namespace cuda
 namespace detail
 {
 
-template <typename System,
-          typename InputIterator,
-          typename OutputIterator,
-          typename BinaryFunction>
-OutputIterator adjacent_difference(dispatchable<System> &system,
+
+template<typename DerivedPolicy,
+         typename InputIterator,
+         typename OutputIterator,
+         typename BinaryFunction>
+__host__ __device__
+OutputIterator adjacent_difference(execution_policy<DerivedPolicy> &exec,
                                    InputIterator first, InputIterator last,
                                    OutputIterator result,
                                    BinaryFunction binary_op);
+
 
 } // end namespace detail
 } // end namespace cuda

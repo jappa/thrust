@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -28,9 +28,18 @@ namespace cuda
 namespace detail
 {
 
-inline void synchronize(const char *message = "");
 
-inline void synchronize_if_enabled(const char *message = "");
+inline __host__ __device__
+void synchronize(const char *message = "");
+
+inline __host__ __device__
+void synchronize(cudaStream_t stream, const char *message = "");
+
+
+inline __host__ __device__
+void synchronize_if_enabled(const char *message = "");
+
+
 
 } // end namespace detail
 } // end namespace cuda

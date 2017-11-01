@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,41 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cpp/detail/tag.h>
-#include <thrust/pair.h>
-#include <thrust/system/detail/internal/scalar/reduce_by_key.h>
 
-namespace thrust
-{
-namespace system
-{
-namespace cpp
-{
-namespace detail
-{
-
-template <typename System,
-          typename InputIterator1,
-          typename InputIterator2,
-          typename OutputIterator1,
-          typename OutputIterator2,
-          typename BinaryPredicate,
-          typename BinaryFunction>
-  thrust::pair<OutputIterator1,OutputIterator2>
-    reduce_by_key(dispatchable<System> &,
-                  InputIterator1 keys_first, 
-                  InputIterator1 keys_last,
-                  InputIterator2 values_first,
-                  OutputIterator1 keys_output,
-                  OutputIterator2 values_output,
-                  BinaryPredicate binary_pred,
-                  BinaryFunction binary_op)
-{
-  return thrust::system::detail::internal::scalar::reduce_by_key(keys_first, keys_last, values_first, keys_output, values_output, binary_pred, binary_op);
-}
-
-} // end namespace detail
-} // end namespace cpp
-} // end namespace system
-} // end namespace thrust
+// this system inherits reduce_by_key
+#include <thrust/system/detail/sequential/reduce_by_key.h>
 

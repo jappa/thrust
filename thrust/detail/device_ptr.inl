@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@
 
 #include <thrust/device_ptr.h>
 #include <thrust/device_reference.h>
-#include <iostream>
-
 #include <thrust/detail/type_traits.h>
 #include <thrust/iterator/iterator_traits.h>
 
@@ -30,23 +28,18 @@ namespace thrust
 {
 
 template<typename T>
+  __host__ __device__
   device_ptr<T> device_pointer_cast(T *ptr)
 {
   return device_ptr<T>(ptr);
 } // end device_pointer_cast()
 
 template<typename T>
+  __host__ __device__
   device_ptr<T> device_pointer_cast(const device_ptr<T> &ptr)
 {
   return ptr;
 } // end device_pointer_cast()
-
-// output to ostream
-template<class E, class T, class Y>
-  std::basic_ostream<E, T> &operator<<(std::basic_ostream<E, T> &os, const device_ptr<Y> &p)
-{
-  return os << p.get();
-} // end operator<<()
 
 
 namespace detail

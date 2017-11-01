@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -12,11 +12,6 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- */
-
-
-/*! \file fill.h
- *  \brief Device implementation of fill.
  */
 
 #pragma once
@@ -35,24 +30,26 @@ namespace generic
 {
 
 
-template<typename System, typename OutputIterator, typename Size, typename T>
-  OutputIterator fill_n(thrust::dispatchable<System> &system,
+template<typename DerivedPolicy, typename OutputIterator, typename Size, typename T>
+__host__ __device__
+  OutputIterator fill_n(thrust::execution_policy<DerivedPolicy> &exec,
                         OutputIterator first,
                         Size n,
                         const T &value)
 {
   // XXX consider using the placeholder expression _1 = value
-  return thrust::generate_n(system, first, n, thrust::detail::fill_functor<T>(value));
+  return thrust::generate_n(exec, first, n, thrust::detail::fill_functor<T>(value));
 }
 
-template<typename System, typename ForwardIterator, typename T>
-  void fill(thrust::dispatchable<System> &system,
+template<typename DerivedPolicy, typename ForwardIterator, typename T>
+__host__ __device__
+  void fill(thrust::execution_policy<DerivedPolicy> &exec,
             ForwardIterator first,
             ForwardIterator last,
             const T &value)
 {
   // XXX consider using the placeholder expression _1 = value
-  thrust::generate(system, first, last, thrust::detail::fill_functor<T>(value));
+  thrust::generate(exec, first, last, thrust::detail::fill_functor<T>(value));
 }
 
 

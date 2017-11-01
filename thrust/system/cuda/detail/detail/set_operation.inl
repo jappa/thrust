@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@
 #include <thrust/system/cuda/detail/block/inclusive_scan.h>
 #include <thrust/system/cuda/detail/block/exclusive_scan.h>
 #include <thrust/system/cuda/detail/block/copy.h>
+#include <thrust/system/cuda/detail/detail/launch_closure.h>
+#include <thrust/system/cuda/detail/detail/uninitialized.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/transform.h>
 #include <thrust/scan.h>
@@ -88,6 +90,7 @@ template<typename Size, typename InputIterator1, typename InputIterator2, typena
   Size n1, n2;
   Compare comp;
 
+  __host__ __device__
   find_partition_offsets_functor(Size partition_size,
                                  InputIterator1 first1, InputIterator1 last1,
                                  InputIterator2 first2, InputIterator2 last2,
@@ -110,18 +113,19 @@ template<typename Size, typename InputIterator1, typename InputIterator2, typena
 };
 
 
-template<typename Size, typename System, typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Compare>
-  OutputIterator find_partition_offsets(thrust::cuda::dispatchable<System> &system,
-                                        Size num_partitions,
-                                        Size partition_size,
-                                        InputIterator1 first1, InputIterator1 last1,
-                                        InputIterator2 first2, InputIterator2 last2,
-                                        OutputIterator result,
-                                        Compare comp)
+template<typename Size, typename DerivedPolicy, typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Compare>
+__host__ __device__
+OutputIterator find_partition_offsets(thrust::cuda::execution_policy<DerivedPolicy> &exec,
+                                      Size num_partitions,
+                                      Size partition_size,
+                                      InputIterator1 first1, InputIterator1 last1,
+                                      InputIterator2 first2, InputIterator2 last2,
+                                      OutputIterator result,
+                                      Compare comp)
 {
   find_partition_offsets_functor<Size,InputIterator1,InputIterator2,Compare> f(partition_size, first1, last1, first2, last2, comp);
 
-  return thrust::transform(system,
+  return thrust::transform(exec,
                            thrust::counting_iterator<Size>(0),
                            thrust::counting_iterator<Size>(num_partitions),
                            result,
@@ -299,7 +303,7 @@ inline __device__
       __shared__ uninitialized_array<value_type, block_size * work_per_thread> s_input;
   
       value_type *s_input_end1 = thrust::system::cuda::detail::block::copy_n(ctx, first1, subpartition_size.first,  s_input.begin());
-      value_type *s_input_end2 = thrust::system::cuda::detail::block::copy_n(ctx, first2, subpartition_size.second, s_input_end1);
+      thrust::system::cuda::detail::block::copy_n(ctx, first2, subpartition_size.second, s_input_end1);
   
       result += block::bounded_count_set_operation_n<block_size,work_per_thread>(ctx,
                                                                                  s_input.begin(), subpartition_size.first,
@@ -358,7 +362,7 @@ OutputIterator set_operation(statically_blocked_thread_array<block_size> &ctx,
       __shared__ uninitialized_array<value_type, block_size * work_per_thread> s_input;
   
       value_type *s_input_end1 = thrust::system::cuda::detail::block::copy_n(ctx, first1, subpartition_size.first,  s_input.begin());
-      value_type *s_input_end2 = thrust::system::cuda::detail::block::copy_n(ctx, first2, subpartition_size.second, s_input_end1);
+      thrust::system::cuda::detail::block::copy_n(ctx, first2, subpartition_size.second, s_input_end1);
   
       result = block::bounded_set_operation_n<block_size,work_per_thread>(ctx,
                                                                           s_input.begin(), subpartition_size.first,
@@ -442,6 +446,7 @@ template<uint16_t threads_per_block, uint16_t work_per_thread, typename InputIte
   Compare        comp;
   SetOperation   set_op;
 
+  __host__ __device__
   count_set_operation_closure(InputIterator1 input_partition_offsets,
                               Size           num_partitions,
                               InputIterator2 first1,
@@ -467,6 +472,7 @@ template<uint16_t threads_per_block, uint16_t work_per_thread, typename InputIte
 
 
 template<uint16_t threads_per_block, uint16_t work_per_thread, typename InputIterator1, typename Size, typename InputIterator2, typename InputIterator3, typename OutputIterator, typename Compare, typename SetOperation>
+__host__ __device__
   count_set_operation_closure<threads_per_block,work_per_thread,InputIterator1,Size,InputIterator2,InputIterator3,OutputIterator,Compare,SetOperation>
     make_count_set_operation_closure(InputIterator1 input_partition_offsets,
                                      Size           num_partitions,
@@ -529,6 +535,7 @@ template<uint16_t threads_per_block, uint16_t work_per_thread, typename InputIte
   Compare        comp;
   SetOperation   set_op;
 
+  __host__ __device__
   set_operation_closure(InputIterator1 input_partition_offsets,
                         Size           num_partitions,
                         InputIterator2 first1,
@@ -556,6 +563,7 @@ template<uint16_t threads_per_block, uint16_t work_per_thread, typename InputIte
 
 
 template<uint16_t threads_per_block, uint16_t work_per_thread, typename InputIterator1, typename Size, typename InputIterator2, typename InputIterator3, typename InputIterator4, typename OutputIterator, typename Compare, typename SetOperation>
+__host__ __device__
   set_operation_closure<threads_per_block,work_per_thread,InputIterator1,Size,InputIterator2,InputIterator3,InputIterator4,OutputIterator,Compare,SetOperation>
     make_set_operation_closure(InputIterator1 input_partition_offsets,
                                Size           num_partitions,
@@ -574,14 +582,22 @@ template<uint16_t threads_per_block, uint16_t work_per_thread, typename InputIte
 } // end namespace set_operation_detail
 
 
-template<typename System, typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Compare, typename SetOperation>
-  OutputIterator set_operation(thrust::cuda::dispatchable<System> &system,
-                               InputIterator1 first1, InputIterator1 last1,
-                               InputIterator2 first2, InputIterator2 last2,
-                               OutputIterator result,
-                               Compare comp,
-                               SetOperation set_op)
+template<typename DerivedPolicy, typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Compare, typename SetOperation>
+__host__ __device__
+OutputIterator set_operation(thrust::cuda::execution_policy<DerivedPolicy> &exec,
+                             InputIterator1 first1, InputIterator1 last1,
+                             InputIterator2 first2, InputIterator2 last2,
+                             OutputIterator result,
+                             Compare comp,
+                             SetOperation set_op)
 {
+  // we're attempting to launch a kernel, assert we're compiling with nvcc
+  // ========================================================================
+  // X Note to the user: If you've found this line due to a compiler error, X
+  // X you need to compile your code using nvcc, rather than g++ or cl.exe  X
+  // ========================================================================
+  THRUST_STATIC_ASSERT( (thrust::detail::depend_on_instantiation<InputIterator1, THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC>::value) );
+
   using thrust::system::cuda::detail::device_properties;
   using thrust::system::cuda::detail::detail::launch_closure;
   namespace d = thrust::system::cuda::detail::detail::set_operation_detail;
@@ -607,27 +623,29 @@ template<typename System, typename InputIterator1, typename InputIterator2, type
 
   // find input partition offsets
   // +1 to handle the end of the input elegantly
-  thrust::detail::temporary_array<thrust::pair<difference,difference>, System> input_partition_offsets(0, system, num_partitions + 1);
-  d::find_partition_offsets<difference>(system, input_partition_offsets.size(), maximum_partition_size, first1, last1, first2, last2, input_partition_offsets.begin(), comp);
+  thrust::detail::temporary_array<thrust::pair<difference,difference>, DerivedPolicy> input_partition_offsets(0, exec, num_partitions + 1);
+  d::find_partition_offsets<difference>(exec, input_partition_offsets.size(), maximum_partition_size, first1, last1, first2, last2, input_partition_offsets.begin(), comp);
 
   const difference num_blocks = thrust::min<difference>(device_properties().maxGridSize[0], num_partitions);
 
   // find output partition offsets
   // +1 to store the total size of the total
-  thrust::detail::temporary_array<difference, System> output_partition_offsets(0, system, num_partitions + 1);
-  launch_closure(d::make_count_set_operation_closure<threads_per_block,work_per_thread>(input_partition_offsets.begin(), num_partitions, first1, first2, output_partition_offsets.begin(), comp, set_op),
+  thrust::detail::temporary_array<difference, DerivedPolicy> output_partition_offsets(0, exec, num_partitions + 1);
+  launch_closure(exec,
+                 d::make_count_set_operation_closure<threads_per_block,work_per_thread>(input_partition_offsets.begin(), num_partitions, first1, first2, output_partition_offsets.begin(), comp, set_op),
                  num_blocks,
                  threads_per_block);
 
   // turn the output partition counts into offsets to output partitions
-  thrust::exclusive_scan(system, output_partition_offsets.begin(), output_partition_offsets.end(), output_partition_offsets.begin());
+  thrust::exclusive_scan(exec, output_partition_offsets.begin(), output_partition_offsets.end(), output_partition_offsets.begin());
 
   // run the set op kernel
-  launch_closure(d::make_set_operation_closure<threads_per_block,work_per_thread>(input_partition_offsets.begin(), num_partitions, first1, first2, output_partition_offsets.begin(), result, comp, set_op),
+  launch_closure(exec,
+                 d::make_set_operation_closure<threads_per_block,work_per_thread>(input_partition_offsets.begin(), num_partitions, first1, first2, output_partition_offsets.begin(), result, comp, set_op),
                  num_blocks,
                  threads_per_block);
 
-  return result + output_partition_offsets[num_partitions];
+  return result + get_value(exec,&output_partition_offsets[num_partitions]);
 }
 
 

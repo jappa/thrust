@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,19 +29,21 @@ namespace detail
 namespace generic
 {
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator,
          typename ForwardIterator>
-  ForwardIterator uninitialized_copy(thrust::dispatchable<System> &system,
+__host__ __device__
+  ForwardIterator uninitialized_copy(thrust::execution_policy<ExecutionPolicy> &exec,
                                      InputIterator first,
                                      InputIterator last,
                                      ForwardIterator result);
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator,
          typename Size,
          typename ForwardIterator>
-  ForwardIterator uninitialized_copy_n(thrust::dispatchable<System> &system,
+__host__ __device__
+  ForwardIterator uninitialized_copy_n(thrust::execution_policy<ExecutionPolicy> &exec,
                                        InputIterator first,
                                        Size n,
                                        ForwardIterator result);

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/cuda/detail/tag.h>
+#include <thrust/system/cuda/detail/execution_policy.h>
 
 namespace thrust
 {
@@ -30,33 +30,35 @@ namespace detail
 {
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator>
-  OutputIterator copy(dispatchable<System> &system,
-                      InputIterator first,
-                      InputIterator last,
-                      OutputIterator result);
+__host__ __device__
+OutputIterator copy(execution_policy<DerivedPolicy> &exec,
+                    InputIterator first,
+                    InputIterator last,
+                    OutputIterator result);
 
 
 template<typename System1,
          typename System2,
          typename InputIterator,
          typename OutputIterator>
-  OutputIterator copy(cross_system<System1,System2> systems,
-                      InputIterator first,
-                      InputIterator last,
-                      OutputIterator result);
+OutputIterator copy(cross_system<System1,System2> exec,
+                    InputIterator first,
+                    InputIterator last,
+                    OutputIterator result);
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator,
          typename Size,
          typename OutputIterator>
-  OutputIterator copy_n(dispatchable<System> &system,
-                        InputIterator first,
-                        Size n,
-                        OutputIterator result);
+__host__ __device__
+OutputIterator copy_n(execution_policy<DerivedPolicy> &exec,
+                      InputIterator first,
+                      Size n,
+                      OutputIterator result);
 
 
 template<typename System1,
@@ -64,10 +66,10 @@ template<typename System1,
          typename InputIterator,
          typename Size,
          typename OutputIterator>
-  OutputIterator copy_n(cross_system<System1,System2> systems,
-                        InputIterator first,
-                        Size n,
-                        OutputIterator result);
+OutputIterator copy_n(cross_system<System1,System2> exec,
+                      InputIterator first,
+                      Size n,
+                      OutputIterator result);
 
 
 } // end detail

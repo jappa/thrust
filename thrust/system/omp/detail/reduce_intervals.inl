@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,12 +30,12 @@ namespace omp
 namespace detail
 {
 
-template <typename System,
+template <typename DerivedPolicy,
           typename InputIterator,
           typename OutputIterator,
           typename BinaryFunction,
           typename Decomposition>
-void reduce_intervals(dispatchable<System> &,
+void reduce_intervals(execution_policy<DerivedPolicy> &,
                       InputIterator input,
                       OutputIterator output,
                       BinaryFunction binary_op,
@@ -53,7 +53,7 @@ void reduce_intervals(dispatchable<System> &,
   typedef typename thrust::iterator_value<OutputIterator>::type OutputType;
 
   // wrap binary_op
-  thrust::detail::host_function<BinaryFunction,OutputType> wrapped_binary_op(binary_op);
+  thrust::detail::wrapped_function<BinaryFunction,OutputType> wrapped_binary_op(binary_op);
 
   typedef thrust::detail::intptr_t index_type;
 
@@ -69,7 +69,7 @@ void reduce_intervals(dispatchable<System> &,
 
     if (begin != end)
     {
-      OutputType sum = *begin;
+      OutputType sum = thrust::raw_reference_cast(*begin);
 
       ++begin;
 

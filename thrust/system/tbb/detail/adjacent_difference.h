@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/tbb/detail/tag.h>
+#include <thrust/system/tbb/detail/execution_policy.h>
 #include <thrust/system/detail/generic/adjacent_difference.h>
 
 namespace thrust
@@ -29,18 +29,18 @@ namespace tbb
 namespace detail
 {
 
-template<typename System,
+template<typename DerivedPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename BinaryFunction>
-  OutputIterator adjacent_difference(dispatchable<System> &system,
+  OutputIterator adjacent_difference(execution_policy<DerivedPolicy> &exec,
                                      InputIterator first,
                                      InputIterator last,
                                      OutputIterator result,
                                      BinaryFunction binary_op)
 {
   // tbb prefers generic::adjacent_difference to cpp::adjacent_difference
-  return thrust::system::detail::generic::adjacent_difference(system, first, last, result, binary_op);
+  return thrust::system::detail::generic::adjacent_difference(exec, first, last, result, binary_op);
 } // end adjacent_difference()
 
 } // end detail

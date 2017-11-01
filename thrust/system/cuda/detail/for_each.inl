@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,18 +20,13 @@
  */
 
 #include <thrust/detail/config.h>
-
-#include <thrust/detail/minmax.h>
-#include <thrust/detail/static_assert.h>
-
-#include <thrust/distance.h>
 #include <thrust/for_each.h>
-#include <thrust/system/cuda/detail/detail/launch_closure.h>
-#include <thrust/system/cuda/detail/detail/launch_calculator.h>
-#include <thrust/iterator/iterator_traits.h>
+#include <thrust/distance.h>
+#include <thrust/system/cuda/detail/bulk.h>
 #include <thrust/detail/function.h>
+#include <thrust/detail/seq.h>
+#include <thrust/system/cuda/detail/execute_on_stream.h>
 
-#include <limits>
 
 namespace thrust
 {
@@ -41,36 +36,20 @@ namespace cuda
 {
 namespace detail
 {
-
-template<typename RandomAccessIterator,
-         typename Size,
-         typename UnaryFunction,
-         typename Context>
-struct for_each_n_closure
+namespace for_each_n_detail
 {
-  typedef void result_type;
-  typedef Context context_type;
 
-  RandomAccessIterator first;
-  Size n;
-  thrust::detail::device_function<UnaryFunction,void> f;
-  Context context;
 
-  for_each_n_closure(RandomAccessIterator first,
-                     Size n,
-                     UnaryFunction f,
-                     Context context = Context())
-    : first(first), n(n), f(f), context(context)
-  {}
-
-  __device__ __thrust_forceinline__
-  result_type operator()(void)
+struct for_each_kernel
+{
+  template<typename Iterator, typename Function, typename Size>
+  __host__ __device__
+  void operator()(bulk_::parallel_group<bulk_::concurrent_group<> > &grid, Iterator first, Function f, Size n)
   {
-    const Size grid_size = context.block_dimension() * context.grid_dimension();
+    Size grid_size = grid.size() * grid.this_exec.size();
 
-    Size i = context.linear_index();
+    Size i = grid.this_exec.index() * grid.this_exec.size() + grid.this_exec.this_exec.index();
 
-    // advance iterator
     first += i;
 
     while(i < n)
@@ -80,14 +59,44 @@ struct for_each_n_closure
       first += grid_size;
     }
   }
-}; // end for_each_n_closure
+};
 
 
-template<typename System,
+template<typename Size>
+__host__ __device__
+bool use_wide_counter(Size n, unsigned int narrow_grid_size)
+{
+  // use the wide counter when n will not fit within an unsigned int
+  // or if incrementing an unsigned int by narrow_grid_size would overflow
+  // the counter
+  Size threshold = static_cast<Size>(UINT_MAX);
+
+  bool result = (sizeof(Size) > sizeof(unsigned int)) && (n > threshold);
+
+  if(!result)
+  {
+    // check if we'd overflow the little closure's counter
+    unsigned int narrow_n = static_cast<unsigned int>(n);
+
+    if((narrow_n - 1u) + narrow_grid_size < narrow_n)
+    {
+      result = true;
+    }
+  }
+
+  return result;
+}
+
+
+} // end for_each_n_detail
+
+
+template<typename DerivedPolicy,
          typename RandomAccessIterator,
          typename Size,
          typename UnaryFunction>
-RandomAccessIterator for_each_n(dispatchable<System> &,
+__host__ __device__
+RandomAccessIterator for_each_n(execution_policy<DerivedPolicy> &exec,
                                 RandomAccessIterator first,
                                 Size n,
                                 UnaryFunction f)
@@ -99,59 +108,71 @@ RandomAccessIterator for_each_n(dispatchable<System> &,
   // ========================================================================
   THRUST_STATIC_ASSERT( (thrust::detail::depend_on_instantiation<RandomAccessIterator, THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC>::value) );
 
-  if (n <= 0) return first;  //empty range
-  
-  if ((sizeof(Size) > sizeof(unsigned int))
-       && n > Size((std::numeric_limits<unsigned int>::max)())) // convert to Size to avoid a warning
+  struct workaround
   {
-    // n is large, must use 64-bit indices
-    typedef detail::blocked_thread_array Context;
-    typedef for_each_n_closure<RandomAccessIterator, Size, UnaryFunction, Context> Closure;
-    Closure closure(first, n, f);
+    __host__ __device__
+    static RandomAccessIterator parallel_path(execution_policy<DerivedPolicy> &exec, RandomAccessIterator first, Size n, UnaryFunction f)
+    {
+      thrust::detail::wrapped_function<UnaryFunction,void> wrapped_f(f);
 
-    // calculate launch configuration
-    detail::launch_calculator<Closure> calculator;
+      // opportunistically narrow the type of n
 
-    thrust::tuple<size_t, size_t, size_t> config = calculator.with_variable_block_size();
-    size_t max_blocks = thrust::get<0>(config);
-    size_t block_size = thrust::get<1>(config);
-    size_t num_blocks = thrust::min(max_blocks, (static_cast<size_t>(n) + (block_size - 1)) / block_size);
+      unsigned int narrow_n = static_cast<unsigned int>(n);
+      unsigned int narrow_num_groups = 0;
+      unsigned int narrow_group_size = 0;
 
-    // launch closure
-    detail::launch_closure(closure, num_blocks, block_size);
-  }
-  else
-  {
-    // n is small, 32-bit indices are sufficient
-    typedef detail::blocked_thread_array Context;
-    typedef for_each_n_closure<RandomAccessIterator, unsigned int, UnaryFunction,Context> Closure;
-    Closure closure(first, static_cast<unsigned int>(n), f);
-    
-    // calculate launch configuration
-    detail::launch_calculator<Closure> calculator;
+      // automatically choose a number of groups and a group size
+      thrust::tie(narrow_num_groups, narrow_group_size) = bulk_::choose_sizes(bulk_::grid(), for_each_n_detail::for_each_kernel(), bulk_::root, first, wrapped_f, narrow_n);
 
-    thrust::tuple<size_t, size_t, size_t> config = calculator.with_variable_block_size();
-    size_t max_blocks = thrust::get<0>(config);
-    size_t block_size = thrust::get<1>(config);
-    size_t num_blocks = thrust::min(max_blocks, (static_cast<size_t>(n) + (block_size - 1)) / block_size);
+      // do we need to use the wider type?
+      if(for_each_n_detail::use_wide_counter(n, narrow_num_groups * narrow_group_size))
+      {
+        Size num_groups = 0;
+        Size group_size = 0;
+        thrust::tie(num_groups, group_size) = bulk_::choose_sizes(bulk_::grid(), for_each_n_detail::for_each_kernel(), bulk_::root, first, wrapped_f, n);
 
-    // launch closure
-    launch_closure(closure, num_blocks, block_size);
-  }
+        num_groups = thrust::min<Size>(num_groups, thrust::detail::util::divide_ri(n, group_size));
 
-  return first + n;
+        bulk_::async(bulk_::grid(num_groups,group_size,0,stream(thrust::detail::derived_cast(exec))), for_each_n_detail::for_each_kernel(), bulk_::root, first, wrapped_f, n);
+      }
+      else
+      {
+        // we can use the narrower type for n
+        narrow_num_groups = thrust::min<unsigned int>(narrow_num_groups, thrust::detail::util::divide_ri(narrow_n, narrow_group_size));
+
+        bulk_::async(bulk_::grid(narrow_num_groups,narrow_group_size,0,stream(thrust::detail::derived_cast(exec))), for_each_n_detail::for_each_kernel(), bulk_::root, first, wrapped_f, narrow_n);
+      }
+
+      return first + n;
+    }
+
+    __host__ __device__
+    static RandomAccessIterator sequential_path(execution_policy<DerivedPolicy> &, RandomAccessIterator first, Size n, UnaryFunction f)
+    {
+      return thrust::for_each_n(thrust::seq, first, n, f);
+    }
+  };
+
+#if __BULK_HAS_CUDART__
+  return workaround::parallel_path(exec, first, n, f);
+#else
+  return workaround::sequential_path(exec, first, n, f);
+#endif
 } 
 
-template<typename System,
+
+template<typename DerivedPolicy,
          typename InputIterator,
          typename UnaryFunction>
-  InputIterator for_each(dispatchable<System> &system,
-                         InputIterator first,
-                         InputIterator last,
-                         UnaryFunction f)
+__host__ __device__
+InputIterator for_each(execution_policy<DerivedPolicy> &exec,
+                       InputIterator first,
+                       InputIterator last,
+                       UnaryFunction f)
 {
-  return cuda::detail::for_each_n(system, first, thrust::distance(first,last), f);
+  return cuda::detail::for_each_n(exec, first, thrust::distance(first,last), f);
 } // end for_each()
+
 
 } // end namespace detail
 } // end namespace cuda

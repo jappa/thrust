@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -28,12 +28,14 @@ namespace detail
 namespace generic
 {
 
+
 template <typename InputType, typename Predicate, typename CountType>
 struct count_if_transform
 {
   __host__ __device__ 
   count_if_transform(Predicate _pred) : pred(_pred){}
 
+  __thrust_exec_check_disable__
   __host__ __device__
   CountType operator()(const InputType& val)
   {
@@ -46,27 +48,30 @@ struct count_if_transform
   Predicate pred;
 }; // end count_if_transform
 
-template <typename System, typename InputIterator, typename EqualityComparable>
+
+template <typename DerivedPolicy, typename InputIterator, typename EqualityComparable>
+__host__ __device__
 typename thrust::iterator_traits<InputIterator>::difference_type
-count(thrust::dispatchable<System> &system, InputIterator first, InputIterator last, const EqualityComparable& value)
+count(thrust::execution_policy<DerivedPolicy> &exec, InputIterator first, InputIterator last, const EqualityComparable& value)
 {
-  typedef typename thrust::iterator_traits<InputIterator>::value_type InputType;
-  
   // XXX use placeholder expression here
-  return thrust::count_if(system, first, last, thrust::detail::equal_to_value<EqualityComparable>(value));
+  return thrust::count_if(exec, first, last, thrust::detail::equal_to_value<EqualityComparable>(value));
 } // end count()
 
-template <typename System, typename InputIterator, typename Predicate>
+
+template <typename DerivedPolicy, typename InputIterator, typename Predicate>
+__host__ __device__
 typename thrust::iterator_traits<InputIterator>::difference_type
-count_if(thrust::dispatchable<System> &system, InputIterator first, InputIterator last, Predicate pred)
+count_if(thrust::execution_policy<DerivedPolicy> &exec, InputIterator first, InputIterator last, Predicate pred)
 {
   typedef typename thrust::iterator_traits<InputIterator>::value_type InputType;
   typedef typename thrust::iterator_traits<InputIterator>::difference_type CountType;
   
   thrust::system::detail::generic::count_if_transform<InputType, Predicate, CountType> unary_op(pred);
   thrust::plus<CountType> binary_op;
-  return thrust::transform_reduce(system, first, last, unary_op, CountType(0), binary_op);
+  return thrust::transform_reduce(exec, first, last, unary_op, CountType(0), binary_op);
 } // end count_if()
+
 
 } // end generic
 } // end detail

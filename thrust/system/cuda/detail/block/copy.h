@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -171,7 +171,7 @@ template<typename Context,
       first  += context.block_dimension(),
       result += context.block_dimension())
   {
-    *result = *first;
+    thrust::raw_reference_cast(*result) = thrust::raw_reference_cast(*first);
   } // end for
 
   return end_of_output;
@@ -202,12 +202,86 @@ template<typename Context,
 
 template<typename Context, typename RandomAccessIterator1, typename Size, typename RandomAccessIterator2>
 inline __device__
-RandomAccessIterator2 copy_n(Context &ctx, RandomAccessIterator1 first, Size n, RandomAccessIterator2 result)
+RandomAccessIterator2 async_copy_n(Context &ctx, RandomAccessIterator1 first, Size n, RandomAccessIterator2 result)
 {
   for(Size i = ctx.thread_index(); i < n; i += ctx.block_dimension())
   {
-    result[i] = first[i];
+    thrust::raw_reference_cast(result[i]) = thrust::raw_reference_cast(first[i]);
   }
+
+  return result + n;
+}
+
+
+template<typename Context, typename RandomAccessIterator1, typename Size, typename RandomAccessIterator2>
+inline __device__
+RandomAccessIterator2 copy_n(Context &ctx, RandomAccessIterator1 first, Size n, RandomAccessIterator2 result)
+{
+  result = async_copy_n(ctx, first, n, result);
+  ctx.barrier();
+
+  return result;
+}
+
+
+template<unsigned int work_per_thread, typename Context, typename RandomAccessIterator1, typename Size, typename RandomAccessIterator2>
+inline __device__
+RandomAccessIterator2 async_copy_n_global_to_shared(Context &ctx, RandomAccessIterator1 first, Size n, RandomAccessIterator2 result)
+{
+  typedef typename thrust::iterator_value<RandomAccessIterator1>::type value_type;
+
+  // stage copy through registers
+  value_type reg[work_per_thread];
+
+  // avoid conditional accesses when possible
+  if(n >= ctx.block_dimension() * work_per_thread)
+  {
+    for(unsigned int i = 0; i < work_per_thread; ++i)
+    {
+      unsigned int idx = ctx.block_dimension() * i + ctx.thread_index();
+
+      reg[i] = thrust::raw_reference_cast(first[idx]);
+    }
+  }
+  else
+  {
+    for(unsigned int i = 0; i < work_per_thread; ++i)
+    {
+      unsigned int idx = ctx.block_dimension() * i + ctx.thread_index();
+
+      if(idx < n) reg[i] = thrust::raw_reference_cast(first[idx]);
+    }
+  }
+
+  // avoid conditional accesses when possible
+  if(n >= ctx.block_dimension() * work_per_thread)
+  {
+    for(unsigned int i = 0; i < work_per_thread; ++i)
+    {
+      unsigned int idx = ctx.block_dimension() * i + ctx.thread_index();
+
+      thrust::raw_reference_cast(result[idx]) = reg[i];
+    }
+  }
+  else
+  {
+    for(unsigned int i = 0; i < work_per_thread; ++i)
+    {
+      unsigned int idx = ctx.block_dimension() * i + ctx.thread_index();
+
+      if(idx < n) thrust::raw_reference_cast(result[idx]) = reg[i];
+    }
+  }
+
+  return result + n;
+}
+
+
+template<unsigned int work_per_thread, typename Context, typename RandomAccessIterator1, typename Size, typename RandomAccessIterator2>
+__device__
+RandomAccessIterator2 copy_n_global_to_shared(Context &ctx, RandomAccessIterator1 first, Size n, RandomAccessIterator2 result)
+{
+  result = async_copy_n_global_to_shared<work_per_thread>(ctx, first, n, result);
 
   ctx.barrier();
 

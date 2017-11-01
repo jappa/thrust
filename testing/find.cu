@@ -1,5 +1,6 @@
 #include <unittest/unittest.h>
 #include <thrust/find.h>
+#include <thrust/iterator/retag.h>
 
 
 template <typename T>
@@ -38,8 +39,6 @@ struct less_than_value_pred
 template <class Vector>
 void TestFindSimple(void)
 {
-    typedef typename Vector::value_type T;
-
     Vector vec(5);
     vec[0] = 1;
     vec[1] = 2;

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@
 #include <memory>
 #include <thrust/detail/vector_base.h>
 #include <vector>
+#include <utility>
 
 namespace thrust
 {
@@ -56,10 +57,12 @@ template<typename T, typename Alloc = std::allocator<T> >
     typedef detail::vector_base<T,Alloc> Parent;
 
   public:
-    /*! \cond */
+    /*! \cond
+     */
     typedef typename Parent::size_type  size_type;
     typedef typename Parent::value_type value_type;
-    /*! \endcond */
+    /*! \endcond
+     */
 
     /*! This constructor creates an empty \p host_vector.
      */
@@ -67,9 +70,16 @@ template<typename T, typename Alloc = std::allocator<T> >
     host_vector(void)
       :Parent() {}
 
+    /*! The destructor erases the elements.
+     */
+    //  Define an empty destructor to explicitly specify
+    //  its execution space qualifier, as a workaround for nvcc warning
+    __host__
+    ~host_vector(void) {}
+
     /*! This constructor creates a \p host_vector with the given
      *  size.
-     *  \param n The number of elements to initially craete.
+     *  \param n The number of elements to initially create.
      */
     __host__
     explicit host_vector(size_type n)
@@ -91,12 +101,30 @@ template<typename T, typename Alloc = std::allocator<T> >
     host_vector(const host_vector &v)
       :Parent(v) {}
 
-    /*! Assign operator copies from an exemplar \p host_vector.
-     *  \param v The \p host_vector to copy.
+  #if __cplusplus >= 201103L
+    /*! Move constructor moves from another host_vector.
+     *  \param v The host_vector to move.
      */
-    __host__
-    host_vector &operator=(const host_vector &v)
-    { Parent::operator=(v); return *this; }
+     __host__
+    host_vector(host_vector &&v)
+      :Parent(std::move(v)) {}
+  #endif
+
+  /*! Assign operator copies from an exemplar \p host_vector.
+   *  \param v The \p host_vector to copy.
+   */
+  __host__
+  host_vector &operator=(const host_vector &v)
+  { Parent::operator=(v); return *this; }
+
+  #if __cplusplus >= 201103L
+    /*! Move assign operator moves from another host_vector.
+     *  \param v The host_vector to move.
+     */
+     __host__
+     host_vector &operator=(host_vector &&v)
+     { Parent::operator=(std::move(v)); return *this; }
+  #endif
 
     /*! Copy constructor copies from an exemplar \p host_vector with different type.
      *  \param v The \p host_vector to copy.
@@ -136,6 +164,14 @@ template<typename T, typename Alloc = std::allocator<T> >
     template<typename OtherT, typename OtherAlloc>
     __host__
     host_vector(const device_vector<OtherT,OtherAlloc> &v);
+
+    /*! Assign operator copies from an exemplar \p device_vector.
+     *  \param v The \p device_vector to copy.
+     */
+    template<typename OtherT, typename OtherAlloc>
+    __host__
+    host_vector &operator=(const device_vector<OtherT,OtherAlloc> &v)
+    { Parent::operator=(v); return *this; }
 
     /*! This constructor builds a \p host_vector from a range.
      *  \param first The beginning of the range.

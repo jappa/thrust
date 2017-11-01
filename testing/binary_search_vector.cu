@@ -4,6 +4,7 @@
 #include <thrust/sequence.h>
 #include <thrust/sort.h>
 #include <thrust/iterator/discard_iterator.h>
+#include <thrust/iterator/retag.h>
 
 
 //////////////////////
@@ -22,8 +23,6 @@ struct vector_like
 template <class Vector>
 void TestVectorLowerBoundSimple(void)
 {
-    typedef typename Vector::value_type T;
-
     Vector vec(5);
 
     vec[0] = 0;
@@ -124,8 +123,6 @@ DECLARE_UNITTEST(TestVectorLowerBoundDispatchImplicit);
 template <class Vector>
 void TestVectorUpperBoundSimple(void)
 {
-    typedef typename Vector::value_type T;
-
     Vector vec(5);
 
     vec[0] = 0;
@@ -224,8 +221,6 @@ DECLARE_UNITTEST(TestVectorUpperBoundDispatchImplicit);
 template <class Vector>
 void TestVectorBinarySearchSimple(void)
 {
-    typedef typename Vector::value_type T;
-
     Vector vec(5);
 
     vec[0] = 0;

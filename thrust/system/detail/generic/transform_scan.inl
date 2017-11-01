@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -34,12 +34,14 @@ namespace detail
 namespace generic
 {
 
-template<typename System,
+
+template<typename ExecutionPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename UnaryFunction,
          typename BinaryFunction>
-  OutputIterator transform_inclusive_scan(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator transform_inclusive_scan(thrust::execution_policy<ExecutionPolicy> &exec,
                                           InputIterator first,
                                           InputIterator last,
                                           OutputIterator result,
@@ -56,7 +58,7 @@ template<typename System,
   //   TemporaryType = OutputIterator::value_type
   //
   // XXX upon c++0x, TemporaryType needs to be:
-  // result_of<UnaryFunction>::type
+  // result_of_adaptable_function<UnaryFunction>::type
 
   typedef typename thrust::detail::eval_if<
     thrust::detail::has_result_type<UnaryFunction>::value,
@@ -71,16 +73,18 @@ template<typename System,
   thrust::transform_iterator<UnaryFunction, InputIterator, ValueType> _first(first, unary_op);
   thrust::transform_iterator<UnaryFunction, InputIterator, ValueType> _last(last, unary_op);
 
-  return thrust::inclusive_scan(system, _first, _last, result, binary_op);
+  return thrust::inclusive_scan(exec, _first, _last, result, binary_op);
 } // end transform_inclusive_scan()
 
-template<typename System,
+
+template<typename ExecutionPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename UnaryFunction,
          typename T,
          typename AssociativeOperator>
-  OutputIterator transform_exclusive_scan(thrust::dispatchable<System> &system,
+__host__ __device__
+  OutputIterator transform_exclusive_scan(thrust::execution_policy<ExecutionPolicy> &exec,
                                           InputIterator first,
                                           InputIterator last,
                                           OutputIterator result,
@@ -98,7 +102,7 @@ template<typename System,
   //   TemporaryType = OutputIterator::value_type
   //
   // XXX upon c++0x, TemporaryType needs to be:
-  // result_of<UnaryFunction>::type
+  // result_of_adaptable_function<UnaryFunction>::type
 
   typedef typename thrust::detail::eval_if<
     thrust::detail::has_result_type<UnaryFunction>::value,
@@ -113,12 +117,12 @@ template<typename System,
   thrust::transform_iterator<UnaryFunction, InputIterator, ValueType> _first(first, unary_op);
   thrust::transform_iterator<UnaryFunction, InputIterator, ValueType> _last(last, unary_op);
 
-  return thrust::exclusive_scan(system, _first, _last, result, init, binary_op);
+  return thrust::exclusive_scan(exec, _first, _last, result, init, binary_op);
 } // end transform_exclusive_scan()
+
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace thrust
-
 

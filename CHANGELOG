@@ -1,32 +1,255 @@
 #######################################
+#           Thrust v1.9.0             #
+#######################################
+
+Summary
+    TODO
+
+Breaking API Changes
+    None.
+
+New Features
+    Types
+      thrust::transform_output_iterator 
+
+New Examples
+    transform_output_iterator demonstrates use of a transform_output_iterator - 
+    a new fancy output iterator which transform output before storing result the memory
+
+Other Enhancements
+    If C++11 support is enabled, functors do not have to inherit from thrust::unary_function/thrust::binary_function 
+    anymore when using them with thrust::transform_iterator.
+    The performance of thrust::unique* is improved.
+    If C++11 support is enabled, the move constructor and move assignment operator have been implemented
+    for host_vector,device_vector,cpp::vector,cuda::vector,omp::vector and tbb::vector.
+
+Bug Fixes
+    calculating sin(complex<double>) no longer has precision loss to float
+
+Known Issues
+    TODO
+
+Acknowledgments
+    Thanks to Manuel Schiller for contributing a C++11 based enhancement regarding the deduction of 
+    functor return types, improving the performance of thrust::unique and implementing transform_output_iterator
+    Thanks to Thibault Notargiacomo for the implementation of move semantics for the vector_base based class.
+
+#######################################
+#           Thrust v1.8.3-2           #
+#######################################
+
+Summary
+    Small bug fixes
+    Introduces THRUST_PATCH_NUMBER macro, defined in thrust/version.h, to track bug fixes after a new CUDA release.
+
+New Examples
+    range_view demonstrates use of a view: a non-owning wrapper for an iterator range with a container-like interface
+
+Bug Fixes
+    copy_if, set_operations, reduce_by_key, and their ilks access temporary data in a user provided stream instead of a default one
+    {min,max,minmax}_element can now accept raw device pointer with device execution policy
+    If C++11 support is enabled, functors do not have to inherit from thrust::unary_function/thrust::binary_function
+    anymore when using them with thrust::transform_iterator.
+    clear() operations on vector types no longer requires the element type to have a default constructor
+
+    
+
+Known Issues
+    TODO
+
+#######################################
+#           Thrust v1.8.2             #
+#######################################
+
+Summary
+    Small bug fixes
+
+Bug Fixes
+    Avoid warnings and errors concerning user functions called from __host__ __device__ functions
+    #632 CUDA set_intersection_by_key error
+    #651 thrust::copy between host & device is not interoperable with thrust::cuda::par.on(stream)
+    #664 CUDA for_each ignores execution policy's stream
+
+Known Issues
+    #628 CUDA's reduce_by_key fails on sm_50 devices
+
+#######################################
+#           Thrust v1.8.1             #
+#######################################
+
+Summary
+    Small bug fixes
+
+Bug Fixes
+    #615 CUDA for_each accesses illegal memory locations when given a large range
+    #620 CUDA's reduce_by_key fails on large input
+
+Known Issues
+    #628 CUDA's reduce_by_key fails on sm_50 devices
+
+#######################################
+#           Thrust v1.8.0             #
+#######################################
+
+Summary
+    Thrust 1.8.0 introduces support for algorithm invocation from CUDA __device__ code, support for CUDA streams,
+    and algorithm performance improvements. Users may now invoke Thrust algorithms from CUDA __device__ code,
+    providing a parallel algorithms library to CUDA programmers authoring custom kernels, as well as allowing
+    Thrust programmers to nest their algorithm calls within functors. The thrust::seq execution policy
+    allows users to require sequential algorithm execution in the calling thread and makes a
+    sequential algorithms library available to individual CUDA threads. The .on(stream) syntax allows users to
+    request a CUDA stream for kernels launched during algorithm execution. Finally, new CUDA algorithm
+    implementations provide substantial performance improvements.
+
+Breaking API Changes
+    None.
+
+New Features
+    Algorithms in CUDA __device__ code
+      Thrust algorithms may now be invoked from CUDA __device__ and __host__ __device__ functions.
+
+      Algorithms invoked in this manner must be invoked with an execution policy as the first parameter:
+
+      __device__ int my_device_sort(int *data, size_t n)
+      {
+        thrust::sort(thrust::device, data, data + n);
+      }
+
+      The following execution policies are supported in CUDA __device__ code:
+        thrust::seq
+        thrust::cuda::par
+        thrust::device, when THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
+
+      Parallel algorithm execution may not be accelerated unless CUDA Dynamic Parallelism is available.
+
+    Execution Policies
+      CUDA Streams
+        The thrust::cuda::par.on(stream) syntax allows users to request that CUDA __global__ functions launched during algorithm 
+        execution should occur on a given stream:
+
+        // execute for_each on stream s
+        thrust::for_each(thrust::cuda::par.on(s), begin, end, my_functor);
+
+        Algorithms executed with a CUDA stream in this manner may still synchronize with other streams when allocating temporary
+        storage or returning results to the CPU.
+
+      thrust::seq
+        The thrust::seq execution policy allows users to require that an algorithm execute sequentially in the calling thread:
+
+        // execute for_each sequentially in this thread
+        thrust::for_each(thrust::seq, begin, end, my_functor);
+        
+    Other
+      The new thrust::complex template provides complex number support.
+
+New Examples
+    simple_cuda_streams demonstrates how to request a CUDA stream during algorithm execution.
+    async_reduce demonstrates ways to achieve algorithm invocations which are asynchronous with the calling thread.
+
+Other Enhancements
+    CUDA sort performance for user-defined types is 300% faster on Tesla K20c for large problem sizes.
+    CUDA merge performance is 200% faster on Tesla K20c for large problem sizes.
+    CUDA sort performance for primitive types is 50% faster on Tesla K20c for large problem sizes.
+    CUDA reduce_by_key performance is 25% faster on Tesla K20c for large problem sizes.
+    CUDA scan performance is 15% faster on Tesla K20c for large problem sizes.
+    fallback_allocator example is simpler.
+
+Bug Fixes
+    #364 iterators with unrelated system tags may be used with algorithms invoked with an execution policy
+    #371 do not redefine __CUDA_ARCH__
+    #379 fix crash when dereferencing transform_iterator on the CPU
+    #391 avoid use of uppercase variable names
+    #392 fix thrust::copy between cusp::complex & std::complex
+    #396 program compiled with gcc < 4.3 hangs during comparison sort
+    #406 fallback_allocator.cu example checks device for unified addressing support
+    #417 avoid using std::less<T> in binary search algorithms
+    #418 avoid various warnings
+    #443 including version.h no longer configures default systems
+    #578 nvcc produces warnings when sequential algorithms are used with cpu systems
+
+Known Issues
+    When invoked with primitive data types, thrust::sort, thrust::sort_by_key, thrust::stable_sort, & thrust::stable_sort_by_key may
+    fail to link in some cases with nvcc -rdc=true.
+
+    The CUDA implementation of thrust::reduce_by_key incorrectly outputs the last element in a segment of equivalent keys instead of the first.
+
+Acknowledgments
+    Thanks to Sean Baxter for contributing faster CUDA reduce, merge, and scan implementations.
+    Thanks to Duane Merrill for contributing a faster CUDA radix sort implementation.
+    Thanks to Filipe Maia for contributing the implementation of thrust::complex.
+
+#######################################
+#           Thrust v1.7.2             #
+#######################################
+
+Summary
+    Small bug fixes
+
+Bug Fixes
+    Avoid use of std::min in generic find implementation
+
+#######################################
+#           Thrust v1.7.1             #
+#######################################
+
+Summary
+    Small bug fixes
+
+Bug Fixes
+    Eliminate identifiers in set_operations.cu example with leading underscore
+    Eliminate unused variable warning in CUDA reduce_by_key implemention
+    Avoid deriving function objects from std::unary_function and std::binary_function
+
+#######################################
 #           Thrust v1.7.0             #
 #######################################
 
 Summary
-    XXX TODO
+    Thrust 1.7.0 introduces a new interface for controlling algorithm execution as
+    well as several new algorithms and performance improvements. With this new
+    interface, users may directly control how algorithms execute as well as details
+    such as the allocation of temporary storage. Key/value versions of thrust::merge
+    and the set operation algorithms have been added, as well stencil versions of
+    partitioning algorithms. thrust::tabulate has been introduced to tabulate the
+    values of functions taking integers. For 32b types, new CUDA merge and set
+    operations provide 2-15x faster performance while a new CUDA comparison sort
+    provides 1.3-4x faster performance. Finally, a new TBB reduce_by_key implementation
+    provides 80% faster performance.
 
 Breaking API Changes
-    XXX TODO
     Dispatch
-      custom user backend systems' tag types must now inherit from the corresponding system's dispatchable template (e.g. thrust::cuda::dispatchable) instead
-      of the tag struct (e.g. thrust::cuda::tag). Algorithm specializations will silently go unfound during dispatch otherwise.
-      See examples/minimal_custom_backend.cu and examples/cuda/custom_temporary_allocation.cu for usage examples.
-      thrust::advance and thrust::distance are no longer dispatched based on iterator system and thus may no longer be customized.
+      Custom user backend systems' tag types must now inherit from the corresponding system's execution_policy template (e.g. thrust::cuda::execution_policy) instead
+      of the tag struct (e.g. thrust::cuda::tag). Otherwise, algorithm specializations will silently go unfound during dispatch.
+      See examples/minimal_custom_backend.cu and examples/cuda/fallback_allocator.cu for usage examples.
+
+      thrust::advance and thrust::distance are no longer dispatched based on iterator system type and thus may no longer be customized.
 
     Iterators
-      iterator_facade and iterator_adaptor's Pointer template parameters have been eliminated
-      iterator_adaptor has been moved into the thrust namespace (previously thrust::experimental::iterator_adaptor)
-      iterator_facade has been moved into the thrust namespace (previously thrust::experimental::iterator_facade)
-      iterator_core_access has been moved into the thrust namespace (previously thrust::experimental::iterator_core_access)
-      all iterators' nested pointer typedef (the type of the result of operator->) is now void instead of a pointer type to indicate that such expressions are currently not possible
-      floating point counting_iterators' nested difference_type typedef is now a signed integral type instead of a floating point type
+      iterator_facade and iterator_adaptor's Pointer template parameters have been eliminated.
+      iterator_adaptor has been moved into the thrust namespace (previously thrust::experimental::iterator_adaptor).
+      iterator_facade has been moved into the thrust namespace (previously thrust::experimental::iterator_facade).
+      iterator_core_access has been moved into the thrust namespace (previously thrust::experimental::iterator_core_access).
+      All iterators' nested pointer typedef (the type of the result of operator->) is now void instead of a pointer type to indicate that such expressions are currently impossible.
+      Floating point counting_iterators' nested difference_type typedef is now a signed integral type instead of a floating point type.
 
     Other
-      placeholder expressions may no longer include the comma operator
+      normal_distribution has been moved into the thrust::random namespace (previously thrust::random::experimental::normal_distribution).
+      Placeholder expressions may no longer include the comma operator.
 
 New Features
-    XXX TODO
-    Functions
+    Execution Policies
+      Users may directly control the dispatch of algorithm invocations with optional execution policy arguments.
+      For example, instead of wrapping raw pointers allocated by cudaMalloc with thrust::device_ptr, the thrust::device execution_policy may be passed as an argument to an algorithm invocation to enable CUDA execution.
+      The following execution policies are supported in this version:
+
+        thrust::host
+        thrust::device
+        thrust::cpp::par
+        thrust::cuda::par
+        thrust::omp::par
+        thrust::tbb::par
+
+    Algorithms
 	free
 	get_temporary_buffer
 	malloc
@@ -42,30 +265,28 @@ New Features
         stable_partition_copy with stencil
 	tabulate
 
-    Types
-        XXX TODO
-
-    Device support
-        XXX TODO
-
 New Examples
-    uninitialized_vector
-    XXX TODO
+    uninitialized_vector demonstrates how to use a custom allocator to avoid the automatic initialization of elements in thrust::device_vector.
 
 Other Enhancements
-    XXX TODO
-    XXX TODO stateful dispatch
-    XXX TODO THRUST_DEVICE_SYSTEM_CPP
-    XXX TODO CUDA merge performance
-    XXX TODO CUDA set operation performance
-    XXX TODO TBB reduce_by_key performance
-    XXX TODO TBB algorithm parallelization
-    better support for user allocators in vectors
-    sparse_vector example is now implemented with merge_by_key instead of sort_by_key
-    eliminate various warnings
+    Authors of custom backend systems may manipulate arbitrary state during algorithm dispatch by incorporating it into their execution_policy parameter.
+    Users may control the allocation of temporary storage during algorithm execution by passing standard allocators as parameters via execution policies such as thrust::device.
+    THRUST_DEVICE_SYSTEM_CPP has been added as a compile-time target for the device backend. 
+    CUDA merge performance is 2-15x faster.
+    CUDA comparison sort performance is 1.3-4x faster.
+    CUDA set operation performance is 1.5-15x faster.
+    TBB reduce_by_key performance is 80% faster.
+    Several algorithms have been parallelized with TBB.
+    Support for user allocators in vectors has been improved.
+    The sparse_vector example is now implemented with merge_by_key instead of sort_by_key.
+    Warnings have been eliminated in various contexts.
+    Warnings about __host__ or __device__-only functions called from __host__ __device__ functions have been eliminated in various contexts.
+    Documentation about algorithm requirements have been improved.
+    Simplified the minimal_custom_backend example.
+    Simplified the cuda/custom_temporary_allocation example.
+    Simplified the cuda/fallback_allocator example.
 
 Bug Fixes
-    XXX TODO
     #248 fix broken counting_iterator<float> behavior with OpenMP
     #231, #209 fix set operation failures with CUDA
     #187 fix incorrect occupancy calculation with CUDA
@@ -76,12 +297,12 @@ Bug Fixes
     #10 fix ambiguous overloads of reinterpret_tag
 
 Known Issues
-    XXX TODO
+    g++ versions 4.3 and lower may fail to dispatch thrust::get_temporary_buffer correctly causing infinite recursion in examples such as cuda/custom_temporary_allocation.
 
 Acknowledgments
-    Thanks to Sean Baxter, Bryan Catanzaro, and Manjunath Kudlur for contributing a faster merge implementation for CUDA
-    Thanks to Sean Baxter for contributing a faster set operation implementation for CUDA
-    Thanks to Cliff Woolley for contributing a correct occupancy calculation algorithm
+    Thanks to Sean Baxter, Bryan Catanzaro, and Manjunath Kudlur for contributing a faster merge implementation for CUDA.
+    Thanks to Sean Baxter for contributing a faster set operation implementation for CUDA.
+    Thanks to Cliff Woolley for contributing a correct occupancy calculation algorithm.
 
 #######################################
 #           Thrust v1.6.0             #
@@ -140,6 +361,16 @@ Bug Fixes
 
 Known Issues
     cudafe++.exe may crash when parsing TBB headers on Windows. 
+
+#######################################
+#           Thrust v1.5.3             #
+#######################################
+
+Summary
+    Small bug fixes
+
+Bug Fixes
+    Avoid warnings about potential race due to __shared__ non-POD variable
 
 #######################################
 #           Thrust v1.5.2             #

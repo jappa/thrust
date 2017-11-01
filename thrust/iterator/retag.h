@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-/*! \file retag.h
+/*! \file thrust/iterator/retag.h
  *  \brief Functionality for altering an iterator's associated system.
  */
 
@@ -43,6 +43,7 @@ namespace thrust
  *  \see retag
  */
 template<typename Tag, typename Iterator>
+__host__ __device__
 unspecified_iterator_type reinterpret_tag(Iterator iter);
 
 /*! \p retag returns a copy of an iterator and changes the type of the result's system tag.
@@ -57,6 +58,7 @@ unspecified_iterator_type reinterpret_tag(Iterator iter);
  *  \see reinterpret_tag
  */
 template<typename Tag, typename Iterator>
+__host__ __device__
 unspecified_iterator_type retag(Iterator iter);
 #endif
 

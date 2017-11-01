@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -39,13 +39,15 @@ template<typename Pointer>
         Pointer
       >
 {
+  typedef iterator_adaptor<normal_iterator<Pointer>, Pointer> super_t;
+
   public:
     __host__ __device__
     normal_iterator() {}
 
     __host__ __device__
     normal_iterator(Pointer p)
-      : normal_iterator::iterator_adaptor_(p) {}
+      : super_t(p) {}
     
     template<typename OtherPointer>
     __host__ __device__
@@ -54,7 +56,7 @@ template<typename Pointer>
                       OtherPointer,
                       Pointer
                     >::type * = 0)
-      : normal_iterator::iterator_adaptor_(other.base()) {}
+      : super_t(other.base()) {}
 
 }; // end normal_iterator
 

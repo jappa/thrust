@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,25 +25,29 @@ namespace thrust
 {
 
 
-template<typename System, typename InputIterator, typename OutputIterator>
-  OutputIterator copy(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename InputIterator, typename OutputIterator>
+__host__ __device__
+  OutputIterator copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                       InputIterator first,
                       InputIterator last,
                       OutputIterator result)
 {
   using thrust::system::detail::generic::copy;
-  return copy(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result);
+  return copy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, result);
 } // end copy()
 
 
-template<typename System, typename InputIterator, typename Size, typename OutputIterator>
-  OutputIterator copy_n(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename InputIterator, typename Size, typename OutputIterator>
+__host__ __device__
+  OutputIterator copy_n(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                         InputIterator first,
                         Size n,
                         OutputIterator result)
 {
   using thrust::system::detail::generic::copy_n;
-  return copy_n(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, n, result);
+  return copy_n(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, n, result);
 } // end copy_n()
 
 
@@ -51,12 +55,14 @@ namespace detail
 {
 
 
+__thrust_exec_check_disable__ // because we might call e.g. std::ostream_iterator's constructor
 template<typename System1,
          typename System2,
          typename InputIterator,
          typename OutputIterator>
-  OutputIterator two_system_copy(thrust::dispatchable<System1> &system1,
-                                 thrust::dispatchable<System2> &system2,
+__host__ __device__
+  OutputIterator two_system_copy(const thrust::execution_policy<System1> &system1,
+                                 const thrust::execution_policy<System2> &system2,
                                  InputIterator first,
                                  InputIterator last,
                                  OutputIterator result)
@@ -67,13 +73,15 @@ template<typename System1,
 } // end two_system_copy()
 
 
+__thrust_exec_check_disable__ // because we might call e.g. std::ostream_iterator's constructor
 template<typename System1,
          typename System2,
          typename InputIterator,
          typename Size,
          typename OutputIterator>
-  OutputIterator two_system_copy_n(thrust::dispatchable<System1> &system1,
-                                   thrust::dispatchable<System2> &system2,
+__host__ __device__
+  OutputIterator two_system_copy_n(const thrust::execution_policy<System1> &system1,
+                                   const thrust::execution_policy<System2> &system2,
                                    InputIterator first,
                                    Size n,
                                    OutputIterator result)

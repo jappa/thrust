@@ -1,8 +1,8 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in ctbbliance with the License.
+ *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -17,7 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/tbb/detail/tag.h>
+#include <thrust/system/tbb/detail/execution_policy.h>
 #include <thrust/pair.h>
 
 namespace thrust
@@ -30,20 +30,20 @@ namespace detail
 {
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename ForwardIterator,
          typename BinaryPredicate>
-  ForwardIterator unique(dispatchable<System> &system,
+  ForwardIterator unique(execution_policy<ExecutionPolicy> &exec,
                          ForwardIterator first,
                          ForwardIterator last,
                          BinaryPredicate binary_pred);
 
 
-template<typename System,
+template<typename ExecutionPolicy,
          typename InputIterator,
          typename OutputIterator,
          typename BinaryPredicate>
-  OutputIterator unique_copy(dispatchable<System> &system,
+  OutputIterator unique_copy(execution_policy<ExecutionPolicy> &exec,
                              InputIterator first,
                              InputIterator last,
                              OutputIterator output,

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ namespace detail
 {
 
 template<typename Allocator, typename Pointer, typename Size>
+__host__ __device__
   inline void destroy_range(Allocator &a, Pointer p, Size n);
 
 } // end detail

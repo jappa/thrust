@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 
 #include <thrust/detail/config.h>
 #include <thrust/iterator/iterator_categories.h>
+
+// XXX eliminate this file
 
 namespace thrust
 {

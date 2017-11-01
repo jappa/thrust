@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -122,7 +122,8 @@ template<typename T> struct is_pod
    : public integral_constant<
        bool,
        is_void<T>::value || is_pointer<T>::value || is_arithmetic<T>::value
-#if THRUST_HOST_COMPILER   == THRUST_HOST_COMPILER_MSVC
+#if THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC || \
+    THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_CLANG
 // use intrinsic type traits
        || __is_pod(T)
 #elif THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_GCC
@@ -139,7 +140,8 @@ template<typename T> struct has_trivial_constructor
   : public integral_constant<
       bool,
       is_pod<T>::value
-#if THRUST_HOST_COMPILER   == THRUST_HOST_COMPILER_MSVC
+#if THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC || \
+    THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_CLANG
       || __has_trivial_constructor(T)
 #elif THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_GCC
 // only use the intrinsic for >= 4.3
@@ -154,7 +156,8 @@ template<typename T> struct has_trivial_copy_constructor
   : public integral_constant<
       bool,
       is_pod<T>::value
-#if THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC
+#if THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC || \
+    THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_CLANG
       || __has_trivial_copy(T)
 #elif THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_GCC
 // only use the intrinsic for >= 4.3
@@ -224,6 +227,8 @@ template<typename T>
 
 template<typename T> struct is_reference     : public false_type {};
 template<typename T> struct is_reference<T&> : public true_type {};
+
+template<typename T> struct is_proxy_reference  : public false_type {};
 
 template<typename T> struct is_device_reference                                : public false_type {};
 template<typename T> struct is_device_reference< thrust::device_reference<T> > : public true_type {};
@@ -312,15 +317,15 @@ template<typename From, typename To>
   struct is_convertible_sfinae
 {
   private:
-    typedef char                          one_byte;
-    typedef struct { char two_chars[2]; } two_bytes;
+    typedef char                          yes;
+    typedef struct { char two_chars[2]; } no;
 
-    static one_byte  test(To);
-    static two_bytes test(...);
-    static From      m_from;
+    static inline yes   test(To) { return yes(); }
+    static inline no    test(...) { return no(); } 
+    static inline typename remove_reference<From>::type& from() { typename remove_reference<From>::type* ptr = 0; return *ptr; }
 
   public:
-    static const bool value = sizeof(test(m_from)) == sizeof(one_byte);
+    static const bool value = sizeof(test(from())) == sizeof(yes);
 }; // end is_convertible_sfinae
 
 
@@ -632,6 +637,32 @@ template<typename T>
       >
 {};
 
+
+template<typename T1, typename T2, typename Enable = void> struct promoted_numerical_type;
+
+template<typename T1, typename T2> 
+  struct promoted_numerical_type<T1,T2,typename enable_if<and_
+  <typename is_floating_point<T1>::type,typename is_floating_point<T2>::type>
+  ::value>::type>
+  {
+  typedef larger_type<T1,T2> type;
+  };
+
+template<typename T1, typename T2> 
+  struct promoted_numerical_type<T1,T2,typename enable_if<and_
+  <typename is_integral<T1>::type,typename is_floating_point<T2>::type>
+  ::value>::type>
+  {
+  typedef T2 type;
+  };
+
+template<typename T1, typename T2>
+  struct promoted_numerical_type<T1,T2,typename enable_if<and_
+  <typename is_floating_point<T1>::type, typename is_integral<T2>::type>
+  ::value>::type>
+  {
+  typedef T1 type;
+  };
 
 } // end detail
 

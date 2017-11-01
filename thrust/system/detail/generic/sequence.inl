@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 #include <thrust/detail/config.h>
 #include <thrust/system/detail/generic/sequence.h>
 #include <thrust/iterator/iterator_traits.h>
-#include <thrust/functional.h>
 #include <thrust/tabulate.h>
 
 namespace thrust
@@ -28,37 +27,65 @@ namespace detail
 {
 namespace generic
 {
+namespace sequence_detail
+{
 
 
-template<typename System, typename ForwardIterator>
-  void sequence(thrust::dispatchable<System> &system,
+template<typename T>
+struct sequence_functor
+{
+  T init, step;
+
+  __host__ __device__
+  sequence_functor(T init, T step)
+    : init(init), step(step)
+  {}
+
+  template<typename Index>
+  __host__ __device__
+  T operator()(Index i) const
+  {
+    return init + step * i;
+  }
+};
+
+
+} // end sequence_detail
+
+
+template<typename DerivedPolicy, typename ForwardIterator>
+__host__ __device__
+  void sequence(thrust::execution_policy<DerivedPolicy> &exec,
                 ForwardIterator first,
                 ForwardIterator last)
 {
   typedef typename thrust::iterator_traits<ForwardIterator>::value_type T;
 
-  thrust::sequence(system, first, last, T(0));
+  thrust::sequence(exec, first, last, T(0));
 } // end sequence()
 
 
-template<typename System, typename ForwardIterator, typename T>
-  void sequence(thrust::dispatchable<System> &system,
+template<typename DerivedPolicy, typename ForwardIterator, typename T>
+__host__ __device__
+  void sequence(thrust::execution_policy<DerivedPolicy> &exec,
                 ForwardIterator first,
                 ForwardIterator last,
                 T init)
 {
-  thrust::sequence(system, first, last, init, T(1));
+  thrust::sequence(exec, first, last, init, T(1));
 } // end sequence()
 
 
-template<typename System, typename ForwardIterator, typename T>
-  void sequence(thrust::dispatchable<System> &system,
+template<typename DerivedPolicy, typename ForwardIterator, typename T>
+__host__ __device__
+  void sequence(thrust::execution_policy<DerivedPolicy> &exec,
                 ForwardIterator first,
                 ForwardIterator last,
                 T init,
                 T step)
 {
-  thrust::tabulate(system, first, last, init + step * thrust::placeholders::_1);
+  // XXX TODO use a placeholder expression here
+  thrust::tabulate(exec, first, last, sequence_detail::sequence_functor<T>(init, step));
 } // end sequence()
 
 

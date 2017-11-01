@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,9 +21,13 @@
 #include <thrust/system/cuda/detail/guarded_cuda_runtime_api.h>
 #include <thrust/system_error.h>
 #include <thrust/system/cuda/error.h>
+#include <thrust/system/cuda/detail/throw_on_error.h>
+#include <thrust/system/cuda/detail/synchronize.h>
 #include <thrust/iterator/iterator_traits.h>
-#include <thrust/system/cpp/detail/tag.h>
+#include <thrust/system/cpp/detail/execution_policy.h>
 #include <thrust/detail/raw_pointer_cast.h>
+#include <thrust/functional.h>
+#include <thrust/system/cuda/detail/execute_on_stream.h>
 
 namespace thrust
 {
@@ -33,13 +37,12 @@ namespace cuda
 {
 namespace detail
 {
-
 namespace trivial_copy_detail
 {
 
-inline void checked_cudaMemcpy(void *dst, const void *src, size_t count, enum cudaMemcpyKind kind)
+inline void checked_cudaMemcpyAsync(void *dst, const void *src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream)
 {
-  cudaError_t error = cudaMemcpy(dst,src,count,kind);
+  cudaError_t error = cudaMemcpyAsync(dst,src,count,kind,stream);
   if(error)
   {
     throw thrust::system_error(error, thrust::cuda_category());
@@ -49,8 +52,8 @@ inline void checked_cudaMemcpy(void *dst, const void *src, size_t count, enum cu
 
 template<typename System1,
          typename System2>
-  cudaMemcpyKind cuda_memcpy_kind(const thrust::cuda::dispatchable<System1> &,
-                                  const thrust::cpp::dispatchable<System2> &)
+cudaMemcpyKind cuda_memcpy_kind(const thrust::cuda::execution_policy<System1> &,
+                                const thrust::cpp::execution_policy<System2> &)
 {
   return cudaMemcpyDeviceToHost;
 } // end cuda_memcpy_kind()
@@ -58,31 +61,125 @@ template<typename System1,
 
 template<typename System1,
          typename System2>
-  cudaMemcpyKind cuda_memcpy_kind(const thrust::cpp::dispatchable<System1> &,
-                                  const thrust::cuda::dispatchable<System2> &)
+cudaMemcpyKind cuda_memcpy_kind(const thrust::cpp::execution_policy<System1> &,
+                                const thrust::cuda::execution_policy<System2> &)
 {
   return cudaMemcpyHostToDevice;
 } // end cuda_memcpy_kind()
+
+template<typename System>
+cudaMemcpyKind cuda_memcpy_kind(const thrust::cuda::execution_policy<System> &,
+                                const thrust::cuda::execution_policy<System> &)
+{
+#if defined(_WIN32) && !defined(_WIN64)
+  // On Win32 we assume cudaMemcpyDeviceToDevice on copy with cuda::par
+  // and raw pointers. This is the only legal option in Win32 with cuda::par policy.
+  return cudaMemcpyDeviceToDevice;
+#else
+  // In 64-bit mode copy with cuda::par can legally accept both host and device raw pointers
+  // the memcopy kind will be decided by the CUDA runtime based on UVA space of the pointer.
+  return cudaMemcpyDefault;
+#endif
+} // end cuda_memcpy_kind()
+
+namespace {
+// XXX: WAR for clang++ >= 3.7.0
+//      (a) warnings (nvbug 200202717) &  (b) errors (nvbug 200204101)
+//      (a) Clang issues a warning when the address of a reference is tested for null
+//      (b) With -O2 & -O3 clang assumes that the address of a reference is not a null
+//      and optimizes conditional stmt as "true", which segfaults when the reference
+//      is actually bound to nullptr (for example thrust/detail/reference.inl:155)
+template<class T> 
+bool is_valid_policy(T const& t)
+{
+  volatile size_t value = reinterpret_cast<size_t>(&t);
+  if (value)
+  {
+    if (value == 0)
+    {
+      fprintf(stderr, " clang WAR failed. Terminate.\n");
+      std::terminate();
+    }
+    return true;
+  }
+  return false;
+}
+}
+
+template<typename System1,
+         typename System2>
+cudaStream_t cuda_memcpy_stream(const thrust::cuda::execution_policy<System1> &exec,
+                                const thrust::cpp::execution_policy<System2> &)
+{
+  if (is_valid_policy(exec))
+    return stream(derived_cast(exec));
+  return legacy_stream();
+} // end cuda_memcpy_stream()
+
+template<typename System1,
+         typename System2>
+cudaStream_t cuda_memcpy_stream(const thrust::cpp::execution_policy<System1> &,
+                                const thrust::cuda::execution_policy<System2> &exec)
+{
+  if (is_valid_policy(exec))
+    return stream(derived_cast(exec));
+  return legacy_stream();
+} // end cuda_memcpy_stream()
+
+
+template<typename System>
+cudaStream_t cuda_memcpy_stream(const thrust::cuda::execution_policy<System> &,
+                                const thrust::cuda::execution_policy<System> &exec)
+{
+  if (is_valid_policy(exec))
+    return stream(derived_cast(exec));
+  return legacy_stream();
+} // end cuda_memcpy_stream()
+
+
+
+template<class System>
+cudaStream_t cuda_memcpy_stream(const thrust::system::cuda::detail::execute_on_stream &exec,
+                                const thrust::cuda::execution_policy<System> &)
+{
+  if (is_valid_policy(exec))
+    return stream(exec);
+  return legacy_stream();
+} // end cuda_memcpy_stream()
+
+
+
 
 
 } // end namespace trivial_copy_detail
 
 
-template<typename System,
+template<typename DerivedPolicy,
          typename RandomAccessIterator1,
          typename Size,
          typename RandomAccessIterator2>
-  void trivial_copy_n(dispatchable<System> &system,
-                      RandomAccessIterator1 first,
-                      Size n,
-                      RandomAccessIterator2 result)
+__host__ __device__
+void trivial_copy_n(execution_policy<DerivedPolicy> &exec,
+                    RandomAccessIterator1 first,
+                    Size n,
+                    RandomAccessIterator2 result)
 {
   typedef typename thrust::iterator_value<RandomAccessIterator1>::type T;
 
+#ifndef __CUDA_ARCH__
   void *dst = thrust::raw_pointer_cast(&*result);
   const void *src = thrust::raw_pointer_cast(&*first);
 
-  trivial_copy_detail::checked_cudaMemcpy(dst, src, n * sizeof(T), cudaMemcpyDeviceToDevice);
+  // since the user may have given thrust::cuda::par to thrust::copy explicitly,
+  // this copy may be a cross-space copy that has bypassed system dispatch
+  // we need to have cudaMemcpyAsync figure out the directionality of the copy dynamically
+  // using cudaMemcpyDefault
+
+  cudaMemcpyKind kind = trivial_copy_detail::cuda_memcpy_kind(thrust::detail::derived_cast(exec), thrust::detail::derived_cast(exec));
+  trivial_copy_detail::checked_cudaMemcpyAsync(dst, src, n * sizeof(T), kind, stream(thrust::detail::derived_cast(exec)));
+#else
+  thrust::transform(exec, first, first + n, result, thrust::identity<T>());
+#endif
 }
 
 
@@ -91,10 +188,10 @@ template<typename System1,
          typename RandomAccessIterator1,
          typename Size,
          typename RandomAccessIterator2>
-  void trivial_copy_n(cross_system<System1,System2> &systems,
-                      RandomAccessIterator1 first,
-                      Size n,
-                      RandomAccessIterator2 result)
+void trivial_copy_n(cross_system<System1,System2> &systems,
+                    RandomAccessIterator1 first,
+                    Size n,
+                    RandomAccessIterator2 result)
 {
   typedef typename thrust::iterator_value<RandomAccessIterator1>::type T;
 
@@ -103,7 +200,11 @@ template<typename System1,
 
   cudaMemcpyKind kind = trivial_copy_detail::cuda_memcpy_kind(thrust::detail::derived_cast(systems.system1), thrust::detail::derived_cast(systems.system2));
 
-  trivial_copy_detail::checked_cudaMemcpy(dst, src, n * sizeof(T), kind);
+
+  // async host <-> device copy , but synchronize on a user provided stream
+  cudaStream_t s = trivial_copy_detail::cuda_memcpy_stream(derived_cast(systems.system1), derived_cast(systems.system2));
+  trivial_copy_detail::checked_cudaMemcpyAsync(dst, src, n * sizeof(T), kind, s);
+  synchronize(s, "failed synchronize in thrust::system::cuda::detail::trivial_copy_n");
 }
 
 

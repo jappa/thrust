@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,36 +30,42 @@ namespace thrust
 {
 
 
-template<typename System, typename ForwardIterator>
-  void sequence(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename ForwardIterator>
+__host__ __device__
+  void sequence(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                 ForwardIterator first,
                 ForwardIterator last)
 {
   using thrust::system::detail::generic::sequence;
-  return sequence(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+  return sequence(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last);
 } // end sequence()
 
 
-template<typename System, typename ForwardIterator, typename T>
-  void sequence(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename ForwardIterator, typename T>
+__host__ __device__
+  void sequence(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                 ForwardIterator first,
                 ForwardIterator last,
                 T init)
 {
   using thrust::system::detail::generic::sequence;
-  return sequence(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, init);
+  return sequence(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, init);
 } // end sequence()
 
 
-template<typename System, typename ForwardIterator, typename T>
-  void sequence(const thrust::detail::dispatchable_base<System> &system,
+__thrust_exec_check_disable__
+template<typename DerivedPolicy, typename ForwardIterator, typename T>
+__host__ __device__
+  void sequence(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                 ForwardIterator first,
                 ForwardIterator last,
                 T init,
                 T step)
 {
   using thrust::system::detail::generic::sequence;
-  return sequence(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, init, step);
+  return sequence(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), first, last, init, step);
 } // end sequence()
 
 

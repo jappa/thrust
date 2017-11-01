@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
 #include <thrust/detail/config.h>
 #include <thrust/system/tbb/detail/reduce_by_key.h>
 #include <thrust/iterator/reverse_iterator.h>
-#include <thrust/system/cpp/memory.h>
-#include <thrust/system/tbb/detail/tag.h>
+#include <thrust/detail/seq.h>
+#include <thrust/system/tbb/detail/execution_policy.h>
 #include <thrust/system/tbb/detail/reduce_intervals.h>
 #include <thrust/detail/minmax.h>
 #include <thrust/detail/temporary_array.h>
@@ -81,7 +81,7 @@ template<typename InputIterator1,
   thrust::pair<
     InputIterator1,
     thrust::pair<
-      typename InputIterator1::value_type,
+      typename thrust::iterator_value<InputIterator1>::type,
       typename partial_sum_type<InputIterator2,BinaryFunction>::type
     >
   >
@@ -98,7 +98,7 @@ template<typename InputIterator1,
   thrust::reverse_iterator<InputIterator1> keys_last_r(keys_first);
   thrust::reverse_iterator<InputIterator2> values_first_r(values_first + n);
 
-  typename InputIterator1::value_type result_key = *keys_first_r;
+  typename thrust::iterator_value<InputIterator1>::type result_key = *keys_first_r;
   typename partial_sum_type<InputIterator2,BinaryFunction>::type result_value = *values_first_r;
 
   // consume the entirety of the first key's sequence
@@ -122,7 +122,7 @@ template<typename InputIterator1,
   thrust::tuple<
     OutputIterator1,
     OutputIterator2,
-    typename InputIterator1::value_type,
+    typename thrust::iterator_value<InputIterator1>::type,
     typename partial_sum_type<InputIterator2,BinaryFunction>::type
   >
     reduce_by_key_with_carry(InputIterator1 keys_first, 
@@ -136,16 +136,15 @@ template<typename InputIterator1,
   // first, consume the last sequence to produce the carry
   // XXX is there an elegant way to pose this such that we don't need to default construct carry?
   thrust::pair<
-    typename InputIterator1::value_type,
+    typename thrust::iterator_value<InputIterator1>::type,
     typename partial_sum_type<InputIterator2,BinaryFunction>::type
   > carry;
 
   thrust::tie(keys_last, carry) = reduce_last_segment_backward(keys_first, keys_last, values_first, binary_pred, binary_op);
 
   // finish with sequential reduce_by_key
-  thrust::cpp::tag seq;
   thrust::tie(keys_output, values_output) =
-    thrust::reduce_by_key(seq, keys_first, keys_last, values_first, keys_output, values_output, binary_pred, binary_op);
+    thrust::reduce_by_key(thrust::seq, keys_first, keys_last, values_first, keys_output, values_output, binary_pred, binary_op);
   
   return thrust::make_tuple(keys_output, values_output, carry.first, carry.second);
 }
@@ -257,9 +256,9 @@ template<typename Iterator1, typename Iterator2, typename Iterator3, typename It
 } // end reduce_by_key_detail
 
 
-template<typename System, typename Iterator1, typename Iterator2, typename Iterator3, typename Iterator4, typename BinaryPredicate, typename BinaryFunction>
+template<typename DerivedPolicy, typename Iterator1, typename Iterator2, typename Iterator3, typename Iterator4, typename BinaryPredicate, typename BinaryFunction>
   thrust::pair<Iterator3,Iterator4>
-    reduce_by_key(thrust::tbb::dispatchable<System> &system,
+    reduce_by_key(thrust::tbb::execution_policy<DerivedPolicy> &exec,
                   Iterator1 keys_first, Iterator1 keys_last, 
                   Iterator2 values_first,
                   Iterator3 keys_result,
@@ -278,8 +277,7 @@ template<typename System, typename Iterator1, typename Iterator2, typename Itera
   if(n < parallelism_threshold)
   {
     // don't bother parallelizing for small n
-    thrust::cpp::tag seq;
-    return thrust::reduce_by_key(seq, keys_first, keys_last, values_first, keys_result, values_result, binary_pred, binary_op);
+    return thrust::reduce_by_key(thrust::seq, keys_first, keys_last, values_first, keys_result, values_result, binary_pred, binary_op);
   }
 
   // count the number of processors
@@ -293,23 +291,22 @@ template<typename System, typename Iterator1, typename Iterator2, typename Itera
 
   // decompose the input into intervals of size N / num_intervals
   // add one extra element to this vector to store the size of the entire result
-  thrust::detail::temporary_array<difference_type, System> interval_output_offsets(0, system, num_intervals + 1);
+  thrust::detail::temporary_array<difference_type, DerivedPolicy> interval_output_offsets(0, exec, num_intervals + 1);
 
   // first count the number of tail flags in each interval
   thrust::detail::tail_flags<Iterator1,BinaryPredicate> tail_flags = thrust::detail::make_tail_flags(keys_first, keys_last, binary_pred);
-  thrust::system::tbb::detail::reduce_intervals(system, tail_flags.begin(), tail_flags.end(), interval_size, interval_output_offsets.begin() + 1, thrust::plus<size_t>());
+  thrust::system::tbb::detail::reduce_intervals(exec, tail_flags.begin(), tail_flags.end(), interval_size, interval_output_offsets.begin() + 1, thrust::plus<size_t>());
   interval_output_offsets[0] = 0;
 
   // scan the counts to get each body's output offset
-  thrust::cpp::tag seq;
-  thrust::inclusive_scan(seq,
+  thrust::inclusive_scan(thrust::seq,
                          interval_output_offsets.begin() + 1, interval_output_offsets.end(), 
                          interval_output_offsets.begin() + 1);
 
   // do a reduce_by_key serially in each thread
   // the final interval never has a carry by definition, so don't reserve space for it
   typedef typename reduce_by_key_detail::partial_sum_type<Iterator2,BinaryFunction>::type carry_type;
-  thrust::detail::temporary_array<carry_type, System> carries(0, system, num_intervals - 1);
+  thrust::detail::temporary_array<carry_type, DerivedPolicy> carries(0, exec, num_intervals - 1);
 
   // force grainsize == 1 with simple_partioner()
   ::tbb::parallel_for(::tbb::blocked_range<difference_type>(0, num_intervals, 1),
@@ -321,7 +318,7 @@ template<typename System, typename Iterator1, typename Iterator2, typename Itera
   // sequentially accumulate the carries
   // note that the last interval does not have a carry
   // XXX find a way to express this loop via a sequential algorithm, perhaps reduce_by_key
-  for(typename thrust::detail::temporary_array<carry_type,System>::size_type i = 0; i < carries.size(); ++i)
+  for(typename thrust::detail::temporary_array<carry_type,DerivedPolicy>::size_type i = 0; i < carries.size(); ++i)
   {
     // if our interval has a carry, then we need to sum the carry to the next interval's output offset
     // if it does not have a carry, then we need to ignore carry_value[i]

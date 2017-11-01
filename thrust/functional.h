@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -58,18 +58,26 @@ template<typename Operation> struct binary_traits;
  *  };
  *  \endcode
  *
- *  \note unary_function is currently redundant with the C++ STL type
- *  \c std::unary_function. We reserve it here for potential additional
- *  functionality at a later date.
+ *  \note Because C++11 language support makes the functionality of
+ *        \c unary_function obsolete, its use is optional if C++11 language
+ *        features are enabled.
  *
  *  \see http://www.sgi.com/tech/stl/unary_function.html
  *  \see binary_function
  */
 template<typename Argument,
          typename Result>
-  struct unary_function
-    : public std::unary_function<Argument, Result>
+struct unary_function
 {
+  /*! \typedef argument_type
+   *  \brief The type of the function object's argument.
+   */
+  typedef Argument argument_type;
+
+  /*! \typedef result_type;
+   *  \brief The type of the function object's result.
+   */
+  typedef Result   result_type;
 }; // end unary_function
 
 /*! \p binary_function is an empty base class: it contains no member functions
@@ -90,9 +98,9 @@ template<typename Argument,
  *  };
  *  \endcode
  *
- *  \note binary_function is currently redundant with the C++ STL type
- *  \c std::binary_function. We reserve it here for potential additional
- *  functionality at a later date.
+ *  \note Because C++11 language support makes the functionality of
+ *        \c binary_function obsolete, its use is optional if C++11 language
+ *        features are enabled.
  *
  *  \see http://www.sgi.com/tech/stl/binary_function.html
  *  \see unary_function
@@ -100,9 +108,22 @@ template<typename Argument,
 template<typename Argument1,
          typename Argument2,
          typename Result>
-  struct binary_function
-    : public std::binary_function<Argument1, Argument2, Result>
+struct binary_function
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef Argument1 first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef Argument2 second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef Result    result_type;
 }; // end binary_function
 
 /*! \}
@@ -152,8 +173,23 @@ template<typename Argument1,
  *  \see binary_function
  */
 template<typename T>
-  struct plus : public binary_function<T,T,T>
+struct plus
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T result_type;
+
   /*! Function call operator. The return value is <tt>lhs + rhs</tt>.
    */
   __host__ __device__ T operator()(const T &lhs, const T &rhs) const {return lhs + rhs;}
@@ -193,8 +229,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct minus : public binary_function<T,T,T>
+struct minus
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T result_type;
+
   /*! Function call operator. The return value is <tt>lhs - rhs</tt>.
    */
   __host__ __device__ T operator()(const T &lhs, const T &rhs) const {return lhs - rhs;}
@@ -234,8 +285,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct multiplies : public binary_function<T,T,T>
+struct multiplies
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T result_type;
+
   /*! Function call operator. The return value is <tt>lhs * rhs</tt>.
    */
   __host__ __device__ T operator()(const T &lhs, const T &rhs) const {return lhs * rhs;}
@@ -275,19 +341,34 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct divides : public binary_function<T,T,T>
+struct divides
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T result_type;
+
   /*! Function call operator. The return value is <tt>lhs / rhs</tt>.
    */
   __host__ __device__ T operator()(const T &lhs, const T &rhs) const {return lhs / rhs;}
 }; // end divides
 
 /*! \p modulus is a function object. Specifically, it is an Adaptable Binary Function.
- *  If \c f is an object of class <tt>divides<T></tt>, and \c x and \c y are objects
- *  of class \c T, then <tt>f(x,y)</tt> returns <tt>x%y</tt>.
+ *  If \c f is an object of class <tt>modulus<T></tt>, and \c x and \c y are objects
+ *  of class \c T, then <tt>f(x,y)</tt> returns <tt>x \% y</tt>.
  *
  *  \tparam T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
- *          and if \c x and \c y are objects of type \p T, then <tt>x%y</tt> must be defined and must have a return type that is convertible to \c T.
+ *          and if \c x and \c y are objects of type \p T, then <tt>x \% y</tt> must be defined and must have a return type that is convertible to \c T.
  *
  *  The following code snippet demonstrates how to use <tt>modulus</tt> to take
  *  the modulus of one device_vectors of \c floats by another.
@@ -316,8 +397,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct modulus : public binary_function<T,T,T>
+struct modulus
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T result_type;
+
   /*! Function call operator. The return value is <tt>lhs % rhs</tt>.
    */
   __host__ __device__ T operator()(const T &lhs, const T &rhs) const {return lhs % rhs;}
@@ -354,8 +450,18 @@ template<typename T>
  *  \see unary_function
  */
 template<typename T>
-  struct negate : public unary_function<T,T>
+struct negate
 {
+  /*! \typedef argument_type
+   *  \brief The type of the function object's argument.
+   */
+  typedef T argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T result_type;
+
   /*! Function call operator. The return value is <tt>-x</tt>.
    */
   __host__ __device__ T operator()(const T &x) const {return -x;}
@@ -381,8 +487,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct equal_to : public binary_function<T,T,bool>
+struct equal_to
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef bool result_type;
+
   /*! Function call operator. The return value is <tt>lhs == rhs</tt>.
    */
   __host__ __device__ bool operator()(const T &lhs, const T &rhs) const {return lhs == rhs;}
@@ -400,8 +521,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct not_equal_to : public binary_function<T,T,bool>
+struct not_equal_to
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef bool result_type;
+
   /*! Function call operator. The return value is <tt>lhs != rhs</tt>.
    */
   __host__ __device__ bool operator()(const T &lhs, const T &rhs) const {return lhs != rhs;}
@@ -419,8 +555,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct greater : public binary_function<T,T,bool>
+struct greater
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef bool result_type;
+
   /*! Function call operator. The return value is <tt>lhs > rhs</tt>.
    */
   __host__ __device__ bool operator()(const T &lhs, const T &rhs) const {return lhs > rhs;}
@@ -438,8 +589,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct less : public binary_function<T,T,bool>
+struct less
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef bool result_type;
+
   /*! Function call operator. The return value is <tt>lhs < rhs</tt>.
    */
   __host__ __device__ bool operator()(const T &lhs, const T &rhs) const {return lhs < rhs;}
@@ -457,8 +623,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct greater_equal : public binary_function<T,T,bool>
+struct greater_equal
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef bool result_type;
+
   /*! Function call operator. The return value is <tt>lhs >= rhs</tt>.
    */
   __host__ __device__ bool operator()(const T &lhs, const T &rhs) const {return lhs >= rhs;}
@@ -476,8 +657,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct less_equal : public binary_function<T,T,bool>
+struct less_equal
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef bool result_type;
+
   /*! Function call operator. The return value is <tt>lhs <= rhs</tt>.
    */
   __host__ __device__ bool operator()(const T &lhs, const T &rhs) const {return lhs <= rhs;}
@@ -504,8 +700,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct logical_and : public binary_function<T,T,bool>
+struct logical_and
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef bool result_type;
+
   /*! Function call operator. The return value is <tt>lhs && rhs</tt>.
    */
   __host__ __device__ bool operator()(const T &lhs, const T &rhs) const {return lhs && rhs;}
@@ -523,8 +734,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct logical_or : public binary_function<T,T,bool>
+struct logical_or
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef bool result_type;
+
   /*! Function call operator. The return value is <tt>lhs || rhs</tt>.
    */
   __host__ __device__ bool operator()(const T &lhs, const T &rhs) const {return lhs || rhs;}
@@ -556,8 +782,23 @@ template<typename T>
  *  \see unary_function
  */
 template<typename T>
-  struct logical_not : public unary_function<T,bool>
+struct logical_not
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef bool result_type;
+
   /*! Function call operator. The return value is <tt>!x</tt>.
    */
   __host__ __device__ bool operator()(const T &x) const {return !x;}
@@ -604,8 +845,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct bit_and : public binary_function<T,T,T>
+struct bit_and
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T result_type;
+
   /*! Function call operator. The return value is <tt>lhs & rhs</tt>.
    */
   __host__ __device__ T operator()(const T &lhs, const T &rhs) const {return lhs & rhs;}
@@ -644,8 +900,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct bit_or : public binary_function<T,T,T>
+struct bit_or
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T result_type;
+
   /*! Function call operator. The return value is <tt>lhs | rhs</tt>.
    */
   __host__ __device__ T operator()(const T &lhs, const T &rhs) const {return lhs | rhs;}
@@ -684,8 +955,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct bit_xor : public binary_function<T,T,T>
+struct bit_xor
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T result_type;
+
   /*! Function call operator. The return value is <tt>lhs ^ rhs</tt>.
    */
   __host__ __device__ T operator()(const T &lhs, const T &rhs) const {return lhs ^ rhs;}
@@ -720,8 +1006,18 @@ template<typename T>
  *  \see unary_function
  */
 template<typename T>
-  struct identity : public unary_function<T,T>
+struct identity
 {
+  /*! \typedef argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T result_type;
+
   /*! Function call operator. The return value is <tt>x</tt>.
    */
   __host__ __device__ const T &operator()(const T &x) const {return x;}
@@ -752,8 +1048,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct maximum : public binary_function<T,T,T>
+struct maximum
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T result_type;
+
   /*! Function call operator. The return value is <tt>rhs < lhs ? lhs : rhs</tt>.
    */
   __host__ __device__ T operator()(const T &lhs, const T &rhs) const {return lhs < rhs ? rhs : lhs;}
@@ -784,8 +1095,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T>
-  struct minimum : public binary_function<T,T,T>
+struct minimum
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T result_type;
+
   /*! Function call operator. The return value is <tt>lhs < rhs ? lhs : rhs</tt>.
    */
   __host__ __device__ T operator()(const T &lhs, const T &rhs) const {return lhs < rhs ? lhs : rhs;}
@@ -810,8 +1136,23 @@ template<typename T>
  *  \see binary_function
  */
 template<typename T1, typename T2>
-  struct project1st : public binary_function<T1,T2,T1>
+struct project1st
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T1 first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T2 second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T1 result_type;
+
   /*! Function call operator. The return value is <tt>lhs</tt>.
    */
   __host__ __device__ const T1 &operator()(const T1 &lhs, const T2 &rhs) const {return lhs;}
@@ -836,8 +1177,23 @@ template<typename T1, typename T2>
  *  \see binary_function
  */
 template<typename T1, typename T2>
-  struct project2nd : public binary_function<T1,T2,T2>
+struct project2nd
 {
+  /*! \typedef first_argument_type
+   *  \brief The type of the function object's first argument.
+   */
+  typedef T1 first_argument_type;
+
+  /*! \typedef second_argument_type
+   *  \brief The type of the function object's second argument.
+   */
+  typedef T2 second_argument_type;
+
+  /*! \typedef result_type
+   *  \brief The type of the function object's result;
+   */
+  typedef T2 result_type;
+
   /*! Function call operator. The return value is <tt>rhs</tt>.
    */
   __host__ __device__ const T2 &operator()(const T1 &lhs, const T2 &rhs) const {return rhs;}
@@ -879,9 +1235,11 @@ struct unary_negate
   __host__ __device__
   bool operator()(const typename Predicate::argument_type& x) { return !pred(x); }
 
-  /*! \cond */
+  /*! \cond
+   */
   Predicate pred;
-  /*! \endcond */
+  /*! \endcond
+   */
 }; // end unary_negate
 
 /*! \p not1 is a helper function to simplify the creation of Adaptable Predicates:
@@ -934,9 +1292,11 @@ struct binary_negate
       return !pred(x,y); 
   }
 
-  /*! \cond */
+  /*! \cond
+   */
   Predicate pred;
-  /*! \endcond */
+  /*! \endcond
+   */
 }; // end binary_negate
 
 /*! \p not2 is a helper function to simplify the creation of Adaptable Binary Predicates:
@@ -962,21 +1322,155 @@ template<typename BinaryPredicate>
 /*! \}
  */
 
+
+/*! \addtogroup placeholder_objects Placeholder Objects
+ *  \ingroup function_objects
+ *  \{
+ */
+
+
+/*! \namespace placeholders
+ *  \brief Facilities for constructing simple functions inline.
+ *
+ *  Objects in the \p thrust::placeholders namespace may be used to create simple arithmetic functions inline
+ *  in an algorithm invocation. Combining placeholders such as \p _1 and \p _2 with arithmetic operations such as \c +
+ *  creates an unnamed function object which applies the operation to their arguments.
+ *
+ *  The type of placeholder objects is implementation-defined.
+ *
+ *  The following code snippet demonstrates how to use the placeholders \p _1 and \p _2 with \p thrust::transform
+ *  to implement the SAXPY computation:
+ *
+ *  \code
+ *  #include <thrust/device_vector.h>
+ *  #include <thrust/transform.h>
+ *  #include <thrust/functional.h>
+ *
+ *  int main()
+ *  {
+ *    thrust::device_vector<float> x(4), y(4);
+ *    x[0] = 1;
+ *    x[1] = 2;
+ *    x[2] = 3;
+ *    x[3] = 4;
+ *    
+ *    y[0] = 1;
+ *    y[1] = 1;
+ *    y[2] = 1;
+ *    y[3] = 1;
+ *
+ *    float a = 2.0f;
+ *
+ *    using namespace thrust::placeholders;
+ *
+ *    thrust::transform(x.begin(), x.end(), y.begin(), y.begin(),
+ *      a * _1 + _2
+ *    );
+ *
+ *    // y is now {3, 5, 7, 9}
+ *  }
+ *  \endcode
+ */
 namespace placeholders
 {
 
+
+/*! \p thrust::placeholders::_1 is the placeholder for the first function parameter.
+ */
+#ifdef __CUDA_ARCH__
+static const __device__ thrust::detail::functional::placeholder<0>::type _1;
+#else
 static const thrust::detail::functional::placeholder<0>::type _1;
+#endif
+
+
+/*! \p thrust::placeholders::_2 is the placeholder for the second function parameter.
+ */
+#ifdef __CUDA_ARCH__
+static const __device__ thrust::detail::functional::placeholder<1>::type _2;
+#else
 static const thrust::detail::functional::placeholder<1>::type _2;
+#endif
+
+
+/*! \p thrust::placeholders::_3 is the placeholder for the third function parameter.
+ */
+#ifdef __CUDA_ARCH__
+static const __device__ thrust::detail::functional::placeholder<2>::type _3;
+#else
 static const thrust::detail::functional::placeholder<2>::type _3;
+#endif
+
+
+/*! \p thrust::placeholders::_4 is the placeholder for the fourth function parameter.
+ */
+#ifdef __CUDA_ARCH__
+static const __device__ thrust::detail::functional::placeholder<3>::type _4;
+#else
 static const thrust::detail::functional::placeholder<3>::type _4;
+#endif
+
+
+/*! \p thrust::placeholders::_5 is the placeholder for the fifth function parameter.
+ */
+#ifdef __CUDA_ARCH__
+static const __device__ thrust::detail::functional::placeholder<4>::type _5;
+#else
 static const thrust::detail::functional::placeholder<4>::type _5;
+#endif
+
+
+/*! \p thrust::placeholders::_6 is the placeholder for the sixth function parameter.
+ */
+#ifdef __CUDA_ARCH__
+static const __device__ thrust::detail::functional::placeholder<5>::type _6;
+#else
 static const thrust::detail::functional::placeholder<5>::type _6;
+#endif
+
+
+/*! \p thrust::placeholders::_7 is the placeholder for the seventh function parameter.
+ */
+#ifdef __CUDA_ARCH__
+static const __device__ thrust::detail::functional::placeholder<6>::type _7;
+#else
 static const thrust::detail::functional::placeholder<6>::type _7;
+#endif
+
+
+/*! \p thrust::placeholders::_8 is the placeholder for the eighth function parameter.
+ */
+#ifdef __CUDA_ARCH__
+static const __device__ thrust::detail::functional::placeholder<7>::type _8;
+#else
 static const thrust::detail::functional::placeholder<7>::type _8;
+#endif
+
+
+/*! \p thrust::placeholders::_9 is the placeholder for the ninth function parameter.
+ */
+#ifdef __CUDA_ARCH__
+static const __device__ thrust::detail::functional::placeholder<8>::type _9;
+#else
 static const thrust::detail::functional::placeholder<8>::type _9;
+#endif
+
+
+/*! \p thrust::placeholders::_10 is the placeholder for the tenth function parameter.
+ */
+#ifdef __CUDA_ARCH__
+static const __device__ thrust::detail::functional::placeholder<9>::type _10;
+#else
 static const thrust::detail::functional::placeholder<9>::type _10;
+#endif
+
 
 } // end placeholders
+
+
+/*! \} // placeholder_objects
+ */
+
 
 } // end thrust
 
